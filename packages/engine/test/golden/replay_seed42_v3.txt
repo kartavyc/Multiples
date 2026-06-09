@@ -1,0 +1,33 @@
+# Golden replay snapshot v3 — MULTIPLES engine (Phase 3 round 2: the round
+# machine). (seed 42, the scripted full-round sequence in
+# test/golden_replay_test.dart) -> this exact end state, one path=value
+# per line, sorted. Supersedes replay_seed42_v2.txt (RETIRED at
+# engineSchemaVersion 3 — FIELD ADDITIONS to flatten(); the RNG draw order
+# is UNCHANGED from v2; docs/03 §6).
+# ANY change to this file is STREAM-BREAKING: never edit it in place.
+# Version a new file (v4), point the test at it, and bump
+# engineSchemaVersion so in-progress runs are abandoned, not mis-replayed.
+actionLog.length=4
+cash=35615425
+death=-1
+market.liveRateBp=1095
+market.roundsInState=2
+market.stateDurationRounds=2
+market.temp=1
+netWorthAtTierEntry=134802450
+netWorthLastRound=65242303
+phase=1
+playsRemaining=3
+rerollsUsed=0
+rng.cursor=9
+rngCursor=9
+round=1
+schemaVersion=3
+tier=2
+venture.v1.ebitda=4044073
+venture.v1.multiple=7326
+venture.v1.netDebt=0
+venture.v1.own=10000
+venture.v1.passive=0
+venture.v1.roundsNeglected=1
+won=0

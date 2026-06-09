@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>MULTIPLES — Layout A "THE TERMINAL"</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@400;500;600;700&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-0: #0c0b0a;          /* room around the terminal */
+    --bg-1: #121110;          /* screen glass, near-black warm charcoal */
+    --bg-2: #1a1814;          /* panel raised */
+    --amber: #ffb000;         /* phosphor amber */
+    --amber-hi: #ffd24d;
+    --amber-dim: #8a6a1e;
+    --amber-ghost: rgba(255,176,0,.36);
+    --grn: #4dff7a;           /* phosphor green = gains */
+    --grn-dim: #1f7a3c;
+    --red: #ff5544;           /* losses */
+    --red-dim: #7a2a22;
+    --line: #2b2620;          /* hairline dividers */
+    --walnut-1: #4a2e1c;      /* bezel wood */
+    --walnut-2: #2d1b10;
+    --brass: #c9a86a;
+    --brass-dk: #8a6f3f;
+    --glow: 0 0 6px rgba(255,176,0,.55), 0 0 18px rgba(255,176,0,.18);
+    --glow-grn: 0 0 6px rgba(77,255,122,.55), 0 0 16px rgba(77,255,122,.2);
+    --glow-red: 0 0 6px rgba(255,85,68,.5);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; background: var(--bg-0); }
+  body {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--amber);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+
+  /* ============ PHONE FRAME = a desk terminal ============ */
+  #phone {
+    position: relative;
+    width: 412px; height: 860px;
+    max-height: 100vh;
+    border-radius: 22px;
+    overflow: hidden;
+    /* walnut bezel */
+    background:
+      repeating-linear-gradient(94deg, var(--walnut-1) 0 7px, var(--walnut-2) 7px 11px, #3a2415 11px 19px);
+    box-shadow: 0 0 0 5px #000, 0 0 70px rgba(0,0,0,.85), inset 0 0 30px rgba(0,0,0,.6);
+    padding: 30px 9px 9px;
+  }
+  /* brass nameplate screwed onto the bezel */
+  #nameplate {
+    position: absolute; top: 5px; left: 50%; transform: translateX(-50%);
+    z-index: 3;
+    font-family: 'Silkscreen'; font-size: 9px; letter-spacing: 2px;
+    color: #2a1d08;
+    background: linear-gradient(180deg, #e8cd8e, var(--brass) 55%, var(--brass-dk));
+    border: 1px solid #5e4a24; border-radius: 3px;
+    padding: 3px 14px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.45);
+    white-space: nowrap;
+  }
+  #nameplate i { font-style: normal; opacity: .55; padding: 0 4px; }
+
+  /* the CRT glass */
+  #screen {
+    position: relative; width: 100%; height: 100%;
+    border-radius: 12px; overflow: hidden;
+    background:
+      radial-gradient(ellipse 130% 100% at 50% 0%, #181613 0%, var(--bg-1) 50%, #0d0c0a 100%);
+    box-shadow: inset 0 0 0 2px #000, inset 0 0 42px rgba(0,0,0,.75);
+  }
+  /* scanlines + curvature vignette + flicker */
+  #crt {
+    position: absolute; inset: 0; pointer-events: none; z-index: 90;
+    background:
+      repeating-linear-gradient(0deg, rgba(0,0,0,.22) 0px, rgba(0,0,0,.22) 1px, transparent 2px, transparent 3px),
+      radial-gradient(ellipse 95% 88% at 50% 45%, transparent 58%, rgba(0,0,0,.5) 100%);
+  }
+  #crt::after { /* phosphor flicker, very subtle */
+    content: ""; position: absolute; inset: 0;
+    background: rgba(255,200,80,.022);
+    animation: flick 4.2s steps(1) infinite;
+  }
+  @keyframes flick {
+    0%, 100% { opacity: 1; } 7% { opacity: 0; } 9% { opacity: 1; }
+    44% { opacity: 0; } 45% { opacity: 1; } 81% { opacity: .4; } 82% { opacity: 1; }
+  }
+
+  #app { position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; padding: 8px 10px 8px; }
+  #app.shake { animation: shake .42s linear; }
+  @keyframes shake {
+    0%,100% { transform: translate(0,0); }
+    15% { transform: translate(-5px,3px); }
+    30% { transform: translate(5px,-3px); }
+    45% { transform: translate(-4px,-2px); }
+    60% { transform: translate(4px,2px); }
+    80% { transform: translate(-2px,1px); }
+  }
+
+  .num  { font-family: 'VT323', monospace; }
+  .hdr  { font-family: 'Silkscreen'; }
+  .dim  { color: var(--amber-dim); }
+  .grn  { color: var(--grn); text-shadow: var(--glow-grn); }
+  .red  { color: var(--red); text-shadow: var(--glow-red); }
+
+  /* ============ status line ============ */
+  #statline {
+    display: flex; align-items: center; gap: 0;
+    font-size: 12px; letter-spacing: .5px;
+    color: var(--amber); text-shadow: var(--glow);
+    border-bottom: 1px solid var(--line);
+    padding: 1px 2px 5px;
+  }
+  #statline .seg { padding: 0 7px; border-right: 1px solid var(--line); }
+  #statline .seg:first-child { padding-left: 0; }
+  #statline .seg:last-child { border-right: none; margin-left: auto; color: var(--amber-dim); text-shadow: none; }
+  #statline b { font-weight: 700; }
+  #cursor { display: inline-block; width: 7px; height: 13px; background: var(--amber); vertical-align: -2px;
+    margin-left: 4px; animation: blink 1.05s steps(1) infinite; box-shadow: var(--glow); }
+  @keyframes blink { 0%,60% { opacity: 1; } 61%,100% { opacity: 0; } }
+
+  /* ============ QUOTE BOARD ============ */
+  #board { padding: 7px 0 6px; border-bottom: 1px solid var(--line); }
+
+  /* row 1: CASH solid vs NET WORTH ghost */
+  #money-row { display: flex; gap: 8px; margin-bottom: 7px; }
+  .qbox { flex: 1; padding: 5px 9px 6px; position: relative; }
+  .qbox .lbl { font-family: 'Silkscreen'; font-size: 8px; letter-spacing: 1.5px; }
+  .qbox .val { font-size: 36px; line-height: .95; margin-top: 3px; }
+  #q-cash {
+    border: 2px solid var(--amber);
+    background: rgba(255,176,0,.07);
+    box-shadow: var(--glow), inset 0 0 14px rgba(255,176,0,.07);
+    color: var(--amber-hi);
+  }
+  #q-cash .val { text-shadow: var(--glow); }
+  #q-cash .lbl { color: var(--amber); }
+  #q-cash .sub { position: absolute; top: 4px; right: 7px; font-size: 9px; letter-spacing: 1px;
+    color: var(--amber); border: 1px solid var(--amber-dim); padding: 0 4px; border-radius: 2px; }
+  #q-nw {
+    border: 1px dashed var(--amber-ghost);
+    background: transparent;
+    color: var(--amber-ghost);
+  }
+  #q-nw .lbl { color: var(--amber-ghost); }
+  #q-nw .val { text-shadow: none; opacity: .9; }
+  #q-nw .sub {
+    position: absolute; top: 4px; right: 7px; font-size: 9px; letter-spacing: 1px;
+    color: var(--amber-ghost); border: 1px dashed var(--amber-ghost); padding: 0 4px; border-radius: 2px;
+  }
+
+  /* rows 2-5: ticker-style quote rows */
+  .qrow {
+    display: grid; grid-template-columns: 64px 1fr 86px 64px;
+    align-items: baseline;
+    font-size: 14px; line-height: 1;
+    padding: 4px 4px 4px 2px;
+    border-bottom: 1px dotted #221e18;
+  }
+  .qrow:last-child { border-bottom: none; }
+  .qrow .sym { font-family: 'Silkscreen'; font-size: 8px; letter-spacing: 1px; color: var(--amber-dim); }
+  .qrow .desc { font-size: 10px; color: #564a35; letter-spacing: .5px; overflow: hidden; white-space: nowrap; }
+  .qrow .px { font-size: 22px; text-align: right; color: var(--amber); text-shadow: var(--glow); }
+  .qrow .chg { font-size: 13px; text-align: right; }
+  .qrow .chg.up { color: var(--grn); text-shadow: var(--glow-grn); }
+  .qrow .chg.dn { color: var(--red); text-shadow: var(--glow-red); }
+  .qrow .chg.fl { color: var(--amber-dim); }
+  .px.tick { animation: tickpop .5s ease; }
+  @keyframes tickpop { 0% { transform: scale(1); } 35% { transform: scale(1.3); filter: brightness(1.8); } 100% { transform: scale(1); } }
+
+  /* ============ METERS (LED segment style) ============ */
+  #meters { display: flex; gap: 10px; padding: 6px 0 6px; border-bottom: 1px solid var(--line); }
+  .meter { flex: 1; }
+  .meter .mlbl { display: flex; justify-content: space-between; font-size: 9px; letter-spacing: 1px;
+    font-family: 'Silkscreen'; color: var(--amber-dim); margin-bottom: 3px; }
+  .meter .mlbl b { color: var(--amber); font-weight: 400; }
+  .segbar { display: flex; gap: 2px; height: 10px; }
+  .segbar i { flex: 1; background: #221d14; border-radius: 1px; }
+  .segbar i.on  { background: var(--grn); box-shadow: 0 0 5px rgba(77,255,122,.6); }
+  .segbar i.on.amb { background: var(--amber); box-shadow: 0 0 5px rgba(255,176,0,.6); }
+  .segbar i.on.hot { background: var(--red); box-shadow: 0 0 5px rgba(255,85,68,.6); }
+  .segbar i.mk { position: relative; }
+  .segbar i.mk::after { content: "▼"; position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+    font-size: 8px; color: var(--amber-hi); text-shadow: var(--glow); }
+  .meter .mnum { font-size: 10px; color: #564a35; margin-top: 2px; letter-spacing: .5px; }
+  .meter .mnum b { color: var(--amber-dim); font-weight: 400; }
+
+  /* ============ news ticker ============ */
+  #tape-wrap {
+    height: 21px; overflow: hidden; position: relative;
+    border-bottom: 1px solid var(--line);
+    background: rgba(0,0,0,.25);
+  }
+  #tape {
+    position: absolute; white-space: nowrap;
+    font-size: 13px; line-height: 21px; color: var(--amber-dim);
+    animation: tape 16s linear infinite;
+  }
+  #tape b { color: var(--amber); font-weight: 400; text-shadow: var(--glow); }
+  @keyframes tape { from { transform: translateX(394px); } to { transform: translateX(-100%); } }
+
+  /* ============ HOLDINGS ============ */
+  .secthead {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-family: 'Silkscreen'; font-size: 8px; letter-spacing: 2px;
+    color: var(--amber-dim); padding: 6px 2px 3px;
+  }
+  .secthead .r { color: var(--amber); text-shadow: var(--glow); font-size: 8px; }
+  #holdings { border: 1px solid var(--line); background: rgba(255,176,0,.025); }
+  .holding {
+    display: flex; align-items: baseline; gap: 7px;
+    font-size: 12.5px; padding: 6px 8px;
+    transition: box-shadow .2s;
+  }
+  .holding .hname { color: var(--amber-hi); text-shadow: var(--glow); font-weight: 600; font-size: 13px; }
+  .holding .htag { font-size: 9px; color: #0e0c08; background: var(--amber-dim); padding: 0 4px; border-radius: 2px; letter-spacing: 1px; }
+  .holding .hstat { color: var(--amber-dim); }
+  .holding .hstat b { color: var(--amber); font-weight: 400; font-family: 'VT323'; font-size: 16px; }
+  .holding.target-glow { animation: tglow 1s ease-in-out infinite; }
+  @keyframes tglow {
+    0%,100% { box-shadow: inset 0 0 0 1px rgba(255,176,0,0); }
+    50% { box-shadow: inset 0 0 0 1px var(--amber), 0 0 14px rgba(255,176,0,.45); }
+  }
+
+  /* ============ ORDER BLOTTER (the hand) ============ */
+  #blotter { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 5px; padding-top: 2px; }
+  .ticket {
+    display: grid; grid-template-columns: 58px 1fr 78px;
+    align-items: center; gap: 6px;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--amber-dim);
+    background: var(--bg-2);
+    padding: 6px 8px 7px;
+    cursor: pointer; user-select: none;
+    transition: transform .12s, box-shadow .12s, border-color .12s, opacity .3s, filter .3s;
+  }
+  .ticket:hover, .ticket.sel {
+    transform: translateX(3px);
+    border-color: var(--amber); border-left-color: var(--amber-hi);
+    box-shadow: 0 0 14px rgba(255,176,0,.22), inset 0 0 10px rgba(255,176,0,.05);
+  }
+  .ticket .ttype {
+    font-family: 'Silkscreen'; font-size: 8px; letter-spacing: 1px; text-align: center;
+    padding: 4px 0; border-radius: 2px; color: #0e0c08;
+  }
+  .ticket.t-addon { border-left-color: var(--grn); }
+  .ticket.t-addon .ttype { background: var(--grn); box-shadow: 0 0 8px rgba(77,255,122,.35); }
+  .ticket.t-raise .ttype { background: #b48cff; }
+  .ticket.t-raise { border-left-color: #b48cff; }
+  .ticket.t-loan .ttype  { background: var(--amber); }
+  .ticket.t-loan { border-left-color: var(--amber); }
+  .ticket.t-exit .ttype  { background: var(--red); color: #fff; }
+  .ticket.t-exit { border-left-color: var(--red); }
+  .ticket .tmid .tname { font-size: 13px; color: var(--amber-hi); font-weight: 600; line-height: 1.1; }
+  .ticket .tmid .tdata { font-size: 11px; color: var(--amber-dim); margin-top: 2px; letter-spacing: .2px; }
+  .ticket .tmid .tdata b { color: var(--amber); font-weight: 400; font-family: 'VT323'; font-size: 14px; }
+  .ticket .tpx { text-align: right; }
+  .ticket .tpx .pxv { font-family: 'VT323'; font-size: 20px; color: var(--amber); text-shadow: var(--glow); line-height: 1; }
+  .ticket .tpx .pxl { font-size: 8px; font-family: 'Silkscreen'; letter-spacing: 1px; color: var(--amber-dim); margin-top: 1px; }
+  /* filled / dimmed state (also the future plays==0 dim treatment) */
+  .ticket.filled { opacity: .38; filter: saturate(.4); pointer-events: none; transform: none; }
+  .ticket.filled .pxv { color: var(--grn); text-shadow: var(--glow-grn); font-size: 15px; letter-spacing: 1px; }
+
+  /* ============ function key bar ============ */
+  #fkeys { display: flex; gap: 7px; padding: 8px 0 0; }
+  .fkey {
+    flex: 1; cursor: pointer; user-select: none; text-align: center;
+    font-family: 'Silkscreen'; font-size: 9px; letter-spacing: .5px;
+    color: var(--amber);
+    background: linear-gradient(180deg, #2c2820, #1c1914 60%, #131009);
+    border: 1px solid #000; border-radius: 5px;
+    box-shadow: 0 4px 0 #000, inset 0 1px 0 rgba(255,200,90,.16);
+    padding: 9px 2px 10px;
+    transition: transform .06s, box-shadow .06s;
+  }
+  .fkey:active { transform: translateY(3px); box-shadow: 0 1px 0 #000; }
+  .fkey .fk { display: block; font-size: 8px; color: var(--amber-dim); margin-bottom: 3px; }
+  .fkey.primary {
+    background: linear-gradient(180deg, #5a3d00, #3d2a00 60%, #241800);
+    color: var(--amber-hi); text-shadow: var(--glow);
+    border-color: #1a1100;
+    animation: keypulse 1.6s ease-in-out infinite;
+  }
+  @keyframes keypulse { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.35); } }
+
+  #hint {
+    position: absolute; bottom: 268px; left: 0; right: 0; z-index: 8; text-align: center;
+    font-size: 11px; font-family: 'Silkscreen'; letter-spacing: 1px;
+    color: var(--grn); text-shadow: var(--glow-grn); pointer-events: none;
+    animation: keypulse 1.4s ease-in-out infinite;
+  }
+
+  /* ============ overlays ============ */
+  .overlay {
+    position: absolute; inset: 0; z-index: 50; display: none;
+    background: rgba(8,7,5,.88);
+    align-items: flex-end; justify-content: center;
+  }
+  .overlay.show { display: flex; }
+
+  /* napkin = order confirm panel */
+  #napkin .panel {
+    width: 100%; margin: 0 10px 12px;
+    background: var(--bg-1);
+    border: 2px solid var(--amber); border-radius: 4px;
+    box-shadow: var(--glow), inset 0 0 24px rgba(255,176,0,.05);
+    padding: 12px 14px 14px;
+    animation: panelup .25s cubic-bezier(.34,1.3,.64,1);
+  }
+  @keyframes panelup { from { transform: translateY(40%); opacity: .3; } to { transform: translateY(0); opacity: 1; } }
+  #napkin h3 {
+    font-family: 'Silkscreen'; font-size: 10px; letter-spacing: 2px; font-weight: 400;
+    color: var(--amber); text-shadow: var(--glow); text-align: center;
+    border-bottom: 1px solid var(--line); padding-bottom: 8px; margin-bottom: 4px;
+  }
+  #napkin h3 span { color: var(--amber-dim); }
+  .orow { display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 13px; padding: 6px 2px; border-bottom: 1px dotted #221e18; }
+  .orow .k { color: var(--amber-dim); }
+  .orow .k::before { content: "> "; color: #564a35; }
+  .orow .v { font-family: 'VT323'; font-size: 19px; color: var(--amber); text-shadow: var(--glow); }
+  .orow .v.good { color: var(--grn); text-shadow: var(--glow-grn); }
+  .orow .v.bad  { color: var(--red); text-shadow: var(--glow-red); }
+  .onote { font-size: 11px; color: #6b5c3e; line-height: 1.5; padding: 9px 2px 11px; }
+  #napkin .actions { display: flex; gap: 8px; }
+  #napkin .actions .fkey { padding: 11px 2px; font-size: 10px; }
+  #napkin .actions .fkey.exec {
+    background: linear-gradient(180deg, #0d4d24, #073018 60%, #041d0e);
+    color: var(--grn); text-shadow: var(--glow-grn); border-color: #021207;
+    animation: keypulse 1.2s ease-in-out infinite;
+  }
+
+  /* ============ arbitrage flash ============ */
+  #arb { align-items: center; background: rgba(8,7,5,.96); }
+  #arb .wrap { text-align: center; width: 100%; padding: 0 20px; }
+  #arb-banner {
+    font-family: 'Silkscreen'; font-size: 22px; letter-spacing: 2px; line-height: 1.25;
+    color: var(--amber-hi); text-shadow: var(--glow), 0 0 40px rgba(255,176,0,.4);
+    animation: bannerin .5s cubic-bezier(.34,1.7,.64,1);
+  }
+  @keyframes bannerin { 0% { transform: scale(.3); opacity: 0; } 70% { transform: scale(1.12); } 100% { transform: scale(1); } }
+  #arb-sub { font-size: 13px; color: var(--amber-dim); margin: 8px 0 14px; }
+  #arb-sub b { color: var(--amber); font-weight: 400; text-shadow: var(--glow); }
+  #arb-math {
+    display: inline-block; text-align: left; margin-bottom: 12px; min-width: 270px;
+    border: 1px solid var(--line); background: rgba(255,176,0,.03); padding: 8px 14px;
+  }
+  #arb-math .orow { border-bottom: 1px dotted #221e18; gap: 24px; }
+  #arb-math .orow:last-child { border-bottom: none; }
+  #arb-headline {
+    font-family: 'VT323'; font-size: 64px; line-height: 1;
+    color: var(--grn); text-shadow: var(--glow-grn), 0 0 50px rgba(77,255,122,.4);
+    margin: 10px 0 2px; opacity: 0;
+  }
+  #arb-headline.pop { opacity: 1; animation: bigpop .55s cubic-bezier(.34,2,.64,1); }
+  @keyframes bigpop { 0% { transform: scale(.3); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
+  #arb-headsub { font-family: 'Silkscreen'; font-size: 9px; letter-spacing: 2px; color: var(--grn);
+    text-shadow: var(--glow-grn); opacity: .85; margin-bottom: 22px; }
+  #arb .fkey { max-width: 220px; margin: 0 auto; font-size: 11px; padding: 12px 20px; }
+
+  /* floating deltas + sparks */
+  .float-delta {
+    position: absolute; z-index: 60; font-family: 'VT323'; font-size: 24px; pointer-events: none;
+    color: var(--grn); text-shadow: var(--glow-grn);
+    animation: floatup 1.2s ease-out forwards;
+  }
+  .float-delta.neg { color: var(--red); text-shadow: var(--glow-red); }
+  @keyframes floatup { 0% { opacity: 0; transform: translateY(6px); } 15% { opacity: 1; } 100% { opacity: 0; transform: translateY(-32px); } }
+  .spark { position: absolute; z-index: 55; width: 6px; height: 6px; pointer-events: none;
+    animation: spark .8s ease-out forwards; }
+  @keyframes spark { 0% { opacity: 1; transform: translate(0,0) scale(1); } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(.2); } }
+</style>
+</head>
+<body>
+<div id="phone">
+  <div id="nameplate">MULTIPLES&nbsp;MK·I <i>·</i> DEALMAKER TERMINAL <i>·</i> SER.&nbsp;NO.&nbsp;4F2A</div>
+  <div id="screen">
+    <div id="app">
+
+      <!-- STATUS LINE -->
+      <div id="statline">
+        <span class="seg"><b>TIER 2</b></span>
+        <span class="seg">RND 3/8</span>
+        <span class="seg">BAR $10M</span>
+        <span class="seg num">seed#4F2A<span id="cursor"></span></span>
+      </div>
+
+      <!-- QUOTE BOARD : canonical order CASH, NET WORTH, then EBITDA/MULT/DEBT/OWN -->
+      <div id="board">
+        <div id="money-row">
+          <div class="qbox" id="q-cash">
+            <span class="sub">REAL</span>
+            <div class="lbl">CASH</div>
+            <div class="val num" id="v-cash">$382k</div>
+          </div>
+          <div class="qbox" id="q-nw">
+            <span class="sub">[PAPER]</span>
+            <div class="lbl">NET WORTH</div>
+            <div class="val num" id="v-nw">$1.80M</div>
+          </div>
+        </div>
+        <div class="qrow">
+          <span class="sym">EBITDA</span><span class="desc">portfolio earnings /rd</span>
+          <span class="px num" id="v-eb">$310k</span><span class="chg up num" id="c-eb">▲ +22k</span>
+        </div>
+        <div class="qrow">
+          <span class="sym">MULT</span><span class="desc">market pays per $1 earned</span>
+          <span class="px num" id="v-mu">11.0×</span><span class="chg up num" id="c-mu">▲ +0.4</span>
+        </div>
+        <div class="qrow">
+          <span class="sym">DEBT</span><span class="desc">net debt outstanding</span>
+          <span class="px num" id="v-db">$1.20M</span><span class="chg fl num" id="c-db">— 0.0</span>
+        </div>
+        <div class="qrow">
+          <span class="sym">OWN</span><span class="desc">your equity stake</span>
+          <span class="px num" id="v-ow">64%</span><span class="chg dn num" id="c-ow">▼ −8%</span>
+        </div>
+      </div>
+
+      <!-- METERS -->
+      <div id="meters">
+        <div class="meter">
+          <div class="mlbl"><span>RUNWAY</span><b id="runway-st">OK</b></div>
+          <div class="segbar" id="runway-bar">
+            <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i>
+            <i class="on"></i><i class="on amb"></i><i class="on amb"></i><i></i><i></i>
+          </div>
+          <div class="mnum">debt nxt rd <b>$48k</b> / proj cash <b>$96k</b></div>
+        </div>
+        <div class="meter">
+          <div class="mlbl"><span>MARKET</span><b>NEUTRAL</b></div>
+          <div class="segbar">
+            <i class="on" style="background:#3a7bbf;box-shadow:0 0 5px rgba(58,123,191,.5)"></i>
+            <i class="on" style="background:#3a7bbf;box-shadow:0 0 5px rgba(58,123,191,.5)"></i>
+            <i class="on amb"></i><i class="on amb mk"></i><i class="on amb"></i><i class="on amb"></i>
+            <i class="on hot" style="opacity:.25"></i><i class="on hot" style="opacity:.25"></i>
+          </div>
+          <div class="mnum">cold ── <b>neutral</b> ── hot · read: —</div>
+        </div>
+      </div>
+
+      <!-- NEWS TAPE -->
+      <div id="tape-wrap"><div id="tape">*** <b>SOFTWARE BUBBLE FORMING</b> ··· MULTIPLES DRIFTING UP ··· <b>CHEAP DEBT WON'T LAST</b> ··· SELL DON'T BUY ··· RATE DESK QUOTES ~11% ··· *** </div></div>
+
+      <!-- HOLDINGS -->
+      <div class="secthead"><span>HOLDINGS</span><span class="r">SLOTS 1/2</span></div>
+      <div id="holdings">
+        <div class="holding" id="platform">
+          <span class="hname">NIMBUS METRICS</span>
+          <span class="htag">SW</span>
+          <span class="hstat">EBITDA <b id="p-eb">$310k</b></span>
+          <span class="hstat"><b>11.0×</b></span>
+          <span class="hstat">own <b>64%</b></span>
+        </div>
+      </div>
+
+      <!-- ORDER BLOTTER -->
+      <div class="secthead"><span>ORDER BLOTTER · RND 3</span><span class="r" id="plays-ct">⚡ 2/3 PLAYS</span></div>
+      <div id="blotter">
+        <div class="ticket t-addon" id="tk-addon" onclick="openNapkin()">
+          <span class="ttype">ADD-ON</span>
+          <span class="tmid">
+            <div class="tname">MICRO-SAAS TUCK-IN</div>
+            <div class="tdata">EBITDA <b>$40k/rd</b> @ <b>4.5×</b> · SOFTWARE</div>
+          </span>
+          <span class="tpx"><div class="pxv">$180k</div><div class="pxl">BUY</div></span>
+        </div>
+        <div class="ticket t-raise">
+          <span class="ttype">RAISE</span>
+          <span class="tmid">
+            <div class="tname">SERIES A TERM SHEET</div>
+            <div class="tdata">CASH <b>+$800k</b> · OWN <b>−dilute</b></div>
+          </span>
+          <span class="tpx"><div class="pxv">EQUITY</div><div class="pxl">NEW BOSSES</div></span>
+        </div>
+        <div class="ticket t-loan">
+          <span class="ttype">LOAN</span>
+          <span class="tmid">
+            <div class="tname">TERM LOAN</div>
+            <div class="tdata">CASH <b>+$500k</b> · DEBT <b>+$500k</b> @ <b>~11%</b></div>
+          </span>
+          <span class="tpx"><div class="pxv">LEVER</div><div class="pxl">RATE DESK</div></span>
+        </div>
+        <div class="ticket t-exit">
+          <span class="ttype">EXIT</span>
+          <span class="tmid">
+            <div class="tname">ACQUISITION OFFER</div>
+            <div class="tdata">ROLLS <b>6.0×</b> · PAPER <b>→ CASH</b></div>
+          </span>
+          <span class="tpx"><div class="pxv">SELL</div><div class="pxl">CASH OUT</div></span>
+        </div>
+      </div>
+
+      <!-- FUNCTION KEYS -->
+      <div id="fkeys">
+        <div class="fkey"><span class="fk">F1</span>REINVEST</div>
+        <div class="fkey"><span class="fk">F2</span>REROLL $15k</div>
+        <div class="fkey primary"><span class="fk">F4</span>END TURN</div>
+      </div>
+
+      <div id="hint">▲ TAP THE ADD-ON ORDER</div>
+    </div>
+
+    <!-- NAPKIN = ORDER CONFIRM -->
+    <div class="overlay" id="napkin">
+      <div class="panel">
+        <h3>ORDER CONFIRM <span>·</span> THE NAPKIN ✎</h3>
+        <div class="orow"><span class="k">You pay</span><span class="v bad">− $180k CASH</span></div>
+        <div class="orow"><span class="k">Platform absorbs</span><span class="v good">+ $40k EBITDA</span></div>
+        <div class="orow"><span class="k">Same sector?</span><span class="v good">YES · SOFTWARE</span></div>
+        <div class="orow"><span class="k">Synergy bonus</span><span class="v good">+ $8k EBITDA</span></div>
+        <div class="orow"><span class="k">Platform multiple</span><span class="v">11.0× → 11.0× HELD</span></div>
+        <div class="onote">// After commit, its earnings fold in at the platform's multiple. Same-sector orders add synergy and hold the multiple.</div>
+        <div class="actions">
+          <div class="fkey" onclick="closeNapkin()"><span class="fk">ESC</span>BACK</div>
+          <div class="fkey exec" onclick="playDeal()"><span class="fk">ENTER</span>EXECUTE ORDER ▸</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ARBITRAGE FLASH -->
+    <div class="overlay" id="arb">
+      <div class="wrap">
+        <div id="arb-banner">*** MULTIPLE<br>ARBITRAGE ***</div>
+        <div id="arb-sub">$48k earnings bought @ 4.5× · revalued @ <b>11.0×</b></div>
+        <div id="arb-math">
+          <div class="orow"><span class="k">EBITDA</span><span class="v" id="arb-eb">$310k</span></div>
+          <div class="orow"><span class="k">MULTIPLE</span><span class="v">11.0× HELD</span></div>
+          <div class="orow"><span class="k">ENTERPRISE VAL</span><span class="v" id="arb-ev">$3.41M</span></div>
+        </div>
+        <div id="arb-headline">+$260,000</div>
+        <div id="arb-headsub">PURE ARBITRAGE · THAT'S ALLOWED?!</div>
+        <div class="fkey exec" onclick="dismissArb()" style="background:linear-gradient(180deg,#0d4d24,#073018 60%,#041d0e);color:var(--grn);text-shadow:var(--glow-grn)"><span class="fk">ENTER</span>BOOK IT.</div>
+      </div>
+    </div>
+
+    <div id="crt"></div>
+  </div>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  let played = false;
+
+  function openNapkin() {
+    if (played) return;
+    $('tk-addon').classList.add('sel');
+    $('platform').classList.add('target-glow');
+    $('hint').style.display = 'none';
+    $('napkin').classList.add('show');
+  }
+  function closeNapkin() {
+    $('napkin').classList.remove('show');
+    $('tk-addon').classList.remove('sel');
+    $('platform').classList.remove('target-glow');
+  }
+
+  function playDeal() {
+    $('napkin').classList.remove('show');
+    $('tk-addon').classList.remove('sel');
+    $('platform').classList.remove('target-glow');
+    $('arb').classList.add('show');
+    // sequence: count EBITDA up, then EV, then headline pop + shake + burst
+    setTimeout(() => countUp('arb-eb', 310, 358, 700, v => '$' + Math.round(v) + 'k'), 350);
+    setTimeout(() => countUp('arb-ev', 3.41, 3.94, 700, v => '$' + v.toFixed(2) + 'M'), 1100);
+    setTimeout(() => {
+      $('arb-headline').classList.add('pop');
+      $('app').classList.add('shake');
+      burstSparks();
+      setTimeout(() => $('app').classList.remove('shake'), 450);
+    }, 1900);
+  }
+
+  function dismissArb() {
+    $('arb').classList.remove('show');
+    if (played) return;
+    played = true;
+    // apply deltas to the quote board with ticks + floaters
+    setQuote('v-eb', '$358k'); setChg('c-eb', '▲ +48k', 'up'); floatDelta('v-eb', '+$48k');
+    setQuote('v-cash', '$202k'); floatDelta('v-cash', '−$180k', true);
+    setTimeout(() => { setQuote('v-nw', '$1.95M'); floatDelta('v-nw', '+$150k'); }, 250);
+    $('p-eb').textContent = '$358k';
+    $('plays-ct').textContent = '⚡ 1/3 PLAYS';
+    const t = $('tk-addon');
+    t.classList.add('filled');
+    t.querySelector('.pxv').textContent = 'FILLED ✓';
+    t.querySelector('.pxl').textContent = 'EXECUTED';
+  }
+
+  function setQuote(id, txt) {
+    const el = $(id);
+    el.textContent = txt;
+    el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick');
+  }
+  function setChg(id, txt, cls) {
+    const el = $(id);
+    el.textContent = txt;
+    el.className = 'chg ' + cls + ' num';
+  }
+
+  function floatDelta(anchorId, text, neg) {
+    const a = $(anchorId).getBoundingClientRect();
+    const p = $('phone').getBoundingClientRect();
+    const f = document.createElement('div');
+    f.className = 'float-delta' + (neg ? ' neg' : '');
+    f.textContent = text;
+    f.style.left = (a.left - p.left) + 'px';
+    f.style.top = (a.top - p.top - 10) + 'px';
+    $('phone').appendChild(f);
+    setTimeout(() => f.remove(), 1300);
+  }
+
+  function countUp(id, from, to, ms, fmt) {
+    const el = $(id), t0 = performance.now();
+    el.style.color = 'var(--grn)';
+    el.style.textShadow = 'var(--glow-grn)';
+    (function step(t) {
+      const k = Math.min(1, (t - t0) / ms);
+      const ease = 1 - Math.pow(1 - k, 3);
+      el.textContent = fmt(from + (to - from) * ease);
+      if (k < 1) requestAnimationFrame(step);
+    })(t0);
+  }
+
+  function burstSparks() {
+    const h = $('arb-headline').getBoundingClientRect();
+    const p = $('phone').getBoundingClientRect();
+    for (let i = 0; i < 20; i++) {
+      const s = document.createElement('div');
+      s.className = 'spark';
+      const ang = Math.random() * Math.PI * 2, d = 60 + Math.random() * 95;
+      s.style.setProperty('--dx', Math.cos(ang) * d + 'px');
+      s.style.setProperty('--dy', Math.sin(ang) * d + 'px');
+      s.style.left = (h.left - p.left + h.width / 2) + 'px';
+      s.style.top = (h.top - p.top + h.height / 2) + 'px';
+      s.style.background = ['#ffb000', '#4dff7a', '#ffd24d'][i % 3];
+      s.style.boxShadow = '0 0 6px ' + ['#ffb000', '#4dff7a', '#ffd24d'][i % 3];
+      $('phone').appendChild(s);
+      setTimeout(() => s.remove(), 850);
+    }
+  }
+</script>
+</body>
+</html>

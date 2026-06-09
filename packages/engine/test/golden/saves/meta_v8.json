@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 8,
+  "reputation": 312500,
+  "metaLevel": 2,
+  "furthestTierReached": 4,
+  "unlockedCards": ["VEN_SW_GARAGE", "ADD_SW_PLUGIN", "PRT_SALES_LEAD"],
+  "unlockedSectors": ["SOFTWARE", "SERVICES", "RETAIL", "INDUSTRIAL"],
+  "unlockedBackgrounds": ["BOOTSTRAPPER", "OPERATOR", "DEALMAKER"],
+  "hardModes": [],
+  "cosmetics": { "titles": ["Bootstrapper", "Operator"], "activeTitle": "Operator", "iconSkins": [] },
+  "lastDeathCause": "BANKRUPTCY",
+  "runsPlayed": 41,
+  "cleanExits": 9,
+  "lastSettledRunId": "r_0000002a"
+}

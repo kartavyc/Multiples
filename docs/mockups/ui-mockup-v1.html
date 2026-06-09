@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>MULTIPLES — Balatro-style UI mockup v1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&family=VT323&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --felt-1: #1e3a2f;       /* deep felt green */
+    --felt-2: #0f231c;
+    --ink: #f4efe6;          /* warm white */
+    --ink-dim: #9db5a8;
+    --gold: #f2b736;         /* CASH / money */
+    --gold-dk: #a87a14;
+    --chip-blue: #3fa7e0;    /* EBITDA (chips) */
+    --mult-red: #f2545b;     /* MULTIPLE (mult) */
+    --debt-orange: #f08a3c;  /* NET DEBT */
+    --own-purple: #b07ce8;   /* OWNERSHIP */
+    --card-face: #f7f3e8;
+    --card-edge: #2a2320;
+    --good: #69d671;
+    --bad: #f2545b;
+    --panel: #14271f;
+    --panel-edge: #08130e;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; background: #0a0f0c; }
+  body {
+    font-family: 'Pixelify Sans', monospace;
+    color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+
+  /* ---------- phone frame ---------- */
+  #phone {
+    position: relative;
+    width: 412px; height: 860px;
+    max-height: 100vh;
+    border-radius: 24px;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse 120% 90% at 50% 30%, var(--felt-1) 0%, var(--felt-2) 78%, #081511 100%);
+    box-shadow: 0 0 0 6px #000, 0 0 60px rgba(0,0,0,.8);
+  }
+  /* felt texture */
+  #phone::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+    background-image: radial-gradient(rgba(255,255,255,.045) 1px, transparent 1px);
+    background-size: 4px 4px;
+  }
+  /* CRT scanlines + vignette */
+  #crt {
+    position: absolute; inset: 0; pointer-events: none; z-index: 90;
+    background:
+      repeating-linear-gradient(0deg, rgba(0,0,0,.16) 0px, rgba(0,0,0,.16) 1px, transparent 2px, transparent 4px),
+      radial-gradient(ellipse 90% 80% at 50% 45%, transparent 55%, rgba(0,0,0,.45) 100%);
+    mix-blend-mode: multiply;
+  }
+  #app { position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; padding: 12px 12px 10px; }
+  #app.shake { animation: shake .42s linear; }
+  @keyframes shake {
+    0%,100% { transform: translate(0,0) rotate(0); }
+    15% { transform: translate(-5px,3px) rotate(-.5deg); }
+    30% { transform: translate(5px,-3px) rotate(.5deg); }
+    45% { transform: translate(-4px,-2px) rotate(-.4deg); }
+    60% { transform: translate(4px,2px) rotate(.4deg); }
+    80% { transform: translate(-2px,1px) rotate(-.2deg); }
+  }
+
+  /* ---------- shared chunky panel/button ---------- */
+  .panel {
+    background: var(--panel);
+    border: 3px solid var(--panel-edge);
+    border-radius: 10px;
+    box-shadow: 0 4px 0 var(--panel-edge);
+  }
+  .btn {
+    font-family: 'Pixelify Sans'; font-weight: 700; color: var(--ink);
+    background: #2f5444; border: 3px solid #08130e; border-radius: 10px;
+    box-shadow: 0 5px 0 #08130e;
+    padding: 10px 16px; font-size: 17px; letter-spacing: .5px;
+    cursor: pointer; user-select: none;
+    transition: transform .06s, box-shadow .06s, filter .15s;
+  }
+  .btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #08130e; }
+  .btn.primary { background: var(--mult-red); color: #fff; text-shadow: 1px 2px 0 rgba(0,0,0,.45); }
+  .btn.gold { background: var(--gold); color: #2a1d05; }
+  .btn.pulse { animation: btnpulse 1.1s ease-in-out infinite; }
+  @keyframes btnpulse { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.35); } }
+
+  .num { font-family: 'VT323', monospace; letter-spacing: 0; }
+
+  /* ---------- HUD ---------- */
+  #hud-top { display: flex; align-items: baseline; gap: 8px; padding: 2px 4px 8px; }
+  #hud-top .tier { font-size: 19px; font-weight: 700; color: var(--gold); text-shadow: 1px 2px 0 rgba(0,0,0,.5); }
+  #hud-top .round { font-size: 15px; color: var(--ink-dim); }
+  #hud-top .seed { margin-left: auto; font-size: 13px; color: #5d7a6c; }
+
+  #money-row { display: flex; gap: 10px; margin-bottom: 8px; }
+  .money-box { flex: 1; border-radius: 12px; padding: 8px 12px 9px; position: relative; }
+  .money-box .lbl { font-size: 13px; font-weight: 600; letter-spacing: 1px; }
+  .money-box .val { font-size: 34px; line-height: 1; margin-top: 2px; }
+  #cash-box {
+    background: linear-gradient(180deg, #f6c44e, #e0a623);
+    border: 3px solid var(--gold-dk); box-shadow: 0 4px 0 var(--gold-dk), 0 0 18px rgba(242,183,54,.25);
+    color: #2a1d05;
+  }
+  #nw-box {
+    border: 3px dashed rgba(244,239,230,.5); background: rgba(255,255,255,.04);
+    color: rgba(244,239,230,.78); box-shadow: none;
+  }
+  #nw-box .paper-tag {
+    position: absolute; top: 6px; right: 8px; font-size: 10px; letter-spacing: 1px;
+    border: 1px solid rgba(244,239,230,.4); border-radius: 4px; padding: 1px 5px; color: rgba(244,239,230,.55);
+  }
+  #nw-box .val { opacity: .85; }
+
+  #stat-row { display: flex; gap: 6px; margin-bottom: 8px; }
+  .stat { flex: 1; border-radius: 9px; padding: 5px 0 6px; text-align: center; background: rgba(0,0,0,.28); border: 2px solid rgba(0,0,0,.5); }
+  .stat .lbl { font-size: 11px; letter-spacing: .5px; font-weight: 600; }
+  .stat .val { font-size: 22px; line-height: 1.05; }
+  .stat.ebitda .lbl, .stat.ebitda .val { color: var(--chip-blue); }
+  .stat.mult .lbl, .stat.mult .val { color: var(--mult-red); }
+  .stat.debt .lbl, .stat.debt .val { color: var(--debt-orange); }
+  .stat.own .lbl, .stat.own .val { color: var(--own-purple); }
+  .stat .val.tick { animation: tickpop .5s ease; }
+  @keyframes tickpop { 0% { transform: scale(1); } 35% { transform: scale(1.45); } 100% { transform: scale(1); } }
+
+  #meters { display: flex; gap: 8px; margin-bottom: 8px; }
+  .meter { flex: 1; background: rgba(0,0,0,.28); border: 2px solid rgba(0,0,0,.5); border-radius: 9px; padding: 5px 8px 7px; }
+  .meter .lbl { display: flex; justify-content: space-between; font-size: 11px; color: var(--ink-dim); margin-bottom: 4px; }
+  .meter .lbl b { color: var(--ink); }
+  .bar { height: 9px; border-radius: 4px; background: #0b1712; overflow: hidden; border: 1px solid #000; }
+  .bar > i { display: block; height: 100%; }
+  #runway-fill { width: 66%; background: linear-gradient(90deg, #2f8f55, #69d671); }
+  #market-bar { position: relative; }
+  #market-bar .zones { display: flex; height: 100%; }
+  #market-bar .zones i { flex: 1; }
+  #market-bar .zones .cold { background: #2b5d8f; }
+  #market-bar .zones .neut { background: #3a4f44; }
+  #market-bar .zones .hot { background: #a8403e; }
+  #market-needle {
+    position: absolute; top: -4px; bottom: -4px; width: 4px; left: 58%;
+    background: var(--ink); border: 1px solid #000; border-radius: 2px;
+    animation: needle 3s ease-in-out infinite;
+  }
+  @keyframes needle { 0%,100% { left: 56%; } 50% { left: 61%; } }
+
+  #ticker-wrap {
+    border-radius: 8px; background: rgba(0,0,0,.4); border: 2px solid rgba(0,0,0,.55);
+    overflow: hidden; margin-bottom: 10px; height: 26px; position: relative;
+  }
+  #ticker {
+    position: absolute; white-space: nowrap; font-size: 14px; line-height: 26px; color: var(--gold);
+    animation: tick 14s linear infinite;
+  }
+  @keyframes tick { from { transform: translateX(412px); } to { transform: translateX(-100%); } }
+
+  /* ---------- venture rail ---------- */
+  #rail-label, #hand-label { display: flex; justify-content: space-between; font-size: 13px; color: var(--ink-dim); padding: 0 4px 4px; letter-spacing: .5px; }
+  #hand-label .plays { color: var(--gold); font-weight: 700; }
+  #rail { display: flex; gap: 10px; margin-bottom: 8px; }
+  .venture {
+    flex: 1; max-width: 50%;
+    background: linear-gradient(180deg, #243f33, #1a2f26);
+    border: 3px solid #0a1510; border-radius: 12px; box-shadow: 0 4px 0 #0a1510;
+    padding: 8px 10px; position: relative; transition: box-shadow .2s, transform .2s;
+  }
+  .venture.target-glow { animation: targetglow 1s ease-in-out infinite; }
+  @keyframes targetglow {
+    0%,100% { box-shadow: 0 4px 0 #0a1510, 0 0 0 0 rgba(242,183,54,0); }
+    50% { box-shadow: 0 4px 0 #0a1510, 0 0 22px 4px rgba(242,183,54,.55); transform: translateY(-2px); }
+  }
+  .venture .vname { font-size: 15px; font-weight: 700; }
+  .venture .vsector { font-size: 11px; color: var(--chip-blue); letter-spacing: 1px; }
+  .venture .vstats { display: flex; gap: 8px; margin-top: 4px; font-size: 18px; }
+  .venture .vstats .e { color: var(--chip-blue); }
+  .venture .vstats .m { color: var(--mult-red); }
+  .venture .vown { font-size: 12px; color: var(--own-purple); margin-top: 1px; }
+
+  /* ---------- plays strip ---------- */
+  #plays-strip { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  #plays-strip .pl-lbl { font-size: 12px; color: var(--ink-dim); letter-spacing: .5px; }
+  .play-chip {
+    font-size: 13px; font-weight: 600; padding: 5px 10px; border-radius: 16px;
+    background: #423a6b; border: 2px solid #14102b; box-shadow: 0 3px 0 #14102b; color: #cfc6ff;
+  }
+  .play-chip.empty { background: transparent; border: 2px dashed rgba(255,255,255,.25); box-shadow: none; color: rgba(255,255,255,.3); }
+
+  /* ---------- the hand ---------- */
+  #hand-area { margin-top: auto; }
+  #hand { display: flex; justify-content: center; gap: -10px; padding: 14px 0 6px; min-height: 196px; align-items: flex-end; }
+  .card {
+    width: 112px; height: 168px; flex-shrink: 0;
+    background: var(--card-face);
+    border: 3px solid var(--card-edge); border-radius: 10px;
+    box-shadow: 0 5px 0 rgba(0,0,0,.55);
+    color: #2a2320; padding: 7px 8px; position: relative;
+    margin: 0 -6px;
+    transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s;
+    cursor: pointer;
+    animation: idle 3.4s ease-in-out infinite;
+  }
+  .card:nth-child(1) { animation-delay: 0s;   transform-origin: 50% 120%; rotate: -4deg; }
+  .card:nth-child(2) { animation-delay: .45s; transform-origin: 50% 120%; rotate: -1.3deg; }
+  .card:nth-child(3) { animation-delay: .9s;  transform-origin: 50% 120%; rotate: 1.3deg; }
+  .card:nth-child(4) { animation-delay: 1.3s; transform-origin: 50% 120%; rotate: 4deg; }
+  @keyframes idle {
+    0%,100% { translate: 0 0; }
+    50% { translate: 0 -5px; }
+  }
+  .card:hover, .card.sel {
+    transform: translateY(-18px) scale(1.07);
+    box-shadow: 0 14px 0 rgba(0,0,0,.45), 0 0 24px rgba(242,183,54,.5);
+    z-index: 5; animation-play-state: paused;
+  }
+  .card .ctype {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px; color: #fff;
+    background: #2a2320; border-radius: 4px; padding: 2px 5px; display: inline-block;
+  }
+  .card .ctype.addon { background: var(--chip-blue); }
+  .card .ctype.raise { background: var(--own-purple); }
+  .card .ctype.loan { background: var(--debt-orange); }
+  .card .ctype.exit { background: var(--gold); color: #2a1d05; }
+  .card .cname { font-size: 14px; font-weight: 700; line-height: 1.05; margin: 5px 0 4px; }
+  .card .crow { display: flex; justify-content: space-between; font-size: 12px; line-height: 1.5; }
+  .card .crow .k { color: #7a6f63; }
+  .card .crow .v { font-family: 'VT323'; font-size: 16px; }
+  .card .cprice {
+    position: absolute; bottom: 7px; left: 8px; right: 8px;
+    text-align: center; font-weight: 700; font-size: 13px;
+    background: #2a2320; color: var(--gold); border-radius: 6px; padding: 3px 0;
+  }
+  .card.dim { filter: grayscale(.7) brightness(.6); pointer-events: none; }
+
+  #hand-bottom { display: flex; gap: 10px; align-items: center; padding: 4px 2px 0; }
+  #reinvest { font-size: 13px; color: var(--ink-dim); text-decoration: underline; cursor: pointer; }
+  #hand-bottom .spacer { flex: 1; }
+
+  /* ---------- overlays ---------- */
+  .overlay {
+    position: absolute; inset: 0; z-index: 50; display: none;
+    background: rgba(5,12,9,.82);
+    align-items: flex-end; justify-content: center;
+  }
+  .overlay.show { display: flex; }
+  .sheet {
+    width: 100%; margin: 0 8px 10px;
+    background: linear-gradient(180deg, #20382d, #15261e);
+    border: 3px solid #08130e; border-radius: 16px; box-shadow: 0 6px 0 #08130e;
+    padding: 16px 16px 18px;
+    animation: sheetup .28s cubic-bezier(.34,1.4,.64,1);
+  }
+  @keyframes sheetup { from { transform: translateY(60%); opacity: .4; } to { transform: translateY(0); opacity: 1; } }
+  .sheet h3 { font-size: 13px; letter-spacing: 2px; color: var(--ink-dim); text-align: center; margin-bottom: 10px; }
+  .nrow { display: flex; justify-content: space-between; font-size: 16px; padding: 5px 2px; border-bottom: 1px dashed rgba(255,255,255,.12); }
+  .nrow .k { color: var(--ink-dim); }
+  .nrow .v { font-family: 'VT323'; font-size: 21px; }
+  .nrow .v.good { color: var(--good); } .nrow .v.bad { color: var(--bad); }
+  .nnote { font-size: 13px; color: var(--ink-dim); line-height: 1.4; padding: 10px 2px 12px; }
+  .sheet .actions { display: flex; gap: 10px; }
+  .sheet .actions .btn { flex: 1; text-align: center; }
+
+  /* ---------- arbitrage flash ---------- */
+  #arb { align-items: center; }
+  #arb .flash-wrap { text-align: center; width: 100%; padding: 0 18px; }
+  #arb-title {
+    font-size: 34px; font-weight: 700; letter-spacing: 1px; color: var(--gold);
+    text-shadow: 2px 3px 0 rgba(0,0,0,.6), 0 0 30px rgba(242,183,54,.5);
+    animation: titlein .5s cubic-bezier(.34,1.8,.64,1);
+  }
+  @keyframes titlein { 0% { transform: scale(.2) rotate(-6deg); opacity: 0; } 70% { transform: scale(1.15) rotate(1deg); } 100% { transform: scale(1) rotate(0); } }
+  #arb-sub { font-size: 16px; color: var(--ink-dim); margin: 6px 0 16px; }
+  #arb-math {
+    display: inline-block; text-align: left; margin-bottom: 14px;
+    background: rgba(0,0,0,.35); border: 2px solid rgba(0,0,0,.5); border-radius: 12px; padding: 10px 16px;
+  }
+  #arb-math .nrow { border: none; gap: 26px; }
+  #arb-headline {
+    font-family: 'VT323'; font-size: 58px; line-height: 1; color: var(--good);
+    text-shadow: 2px 3px 0 rgba(0,0,0,.6), 0 0 36px rgba(105,214,113,.45);
+    margin: 6px 0 2px; opacity: 0;
+  }
+  #arb-headline.pop { opacity: 1; animation: bigpop .55s cubic-bezier(.34,2,.64,1); }
+  @keyframes bigpop { 0% { transform: scale(.3); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
+  #arb-headsub { font-size: 14px; letter-spacing: 2px; color: var(--good); opacity: .8; margin-bottom: 20px; }
+
+  /* floating +deltas over HUD */
+  .float-delta {
+    position: absolute; z-index: 60; font-family: 'VT323'; font-size: 26px; pointer-events: none;
+    color: var(--good); text-shadow: 1px 2px 0 rgba(0,0,0,.6);
+    animation: floatup 1.2s ease-out forwards;
+  }
+  .float-delta.neg { color: var(--bad); }
+  @keyframes floatup { 0% { opacity: 0; transform: translateY(6px); } 15% { opacity: 1; } 100% { opacity: 0; transform: translateY(-34px); } }
+
+  /* sparkle particles */
+  .spark { position: absolute; z-index: 55; width: 7px; height: 7px; background: var(--gold); pointer-events: none;
+    animation: spark .8s ease-out forwards; }
+  @keyframes spark { 0% { opacity: 1; transform: translate(0,0) scale(1); } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(.2); } }
+
+  #hint {
+    position: absolute; bottom: 232px; left: 0; right: 0; z-index: 8; text-align: center;
+    font-size: 13px; color: var(--gold); letter-spacing: .5px; pointer-events: none;
+    animation: btnpulse 1.6s ease-in-out infinite;
+  }
+</style>
+</head>
+<body>
+<div id="phone">
+  <div id="app">
+
+    <!-- HUD -->
+    <div id="hud-top">
+      <span class="tier">TIER 2</span><span class="round">ROUND 3/8 · $10M BAR</span>
+      <span class="seed num">seed#4F2A</span>
+    </div>
+
+    <div id="money-row">
+      <div id="cash-box" class="money-box">
+        <div class="lbl">CASH</div>
+        <div class="val num" id="v-cash">$382k</div>
+      </div>
+      <div id="nw-box" class="money-box">
+        <span class="paper-tag">PAPER</span>
+        <div class="lbl">NET WORTH</div>
+        <div class="val num" id="v-nw">$1.80M</div>
+      </div>
+    </div>
+
+    <div id="stat-row">
+      <div class="stat ebitda"><div class="lbl">EBITDA</div><div class="val num" id="v-eb">$310k</div></div>
+      <div class="stat mult"><div class="lbl">MULT</div><div class="val num" id="v-mu">11.0×</div></div>
+      <div class="stat debt"><div class="lbl">DEBT</div><div class="val num" id="v-db">$1.20M</div></div>
+      <div class="stat own"><div class="lbl">OWN</div><div class="val num" id="v-ow">64%</div></div>
+    </div>
+
+    <div id="meters">
+      <div class="meter">
+        <div class="lbl"><span>RUNWAY</span><b id="runway-txt">OK · $48k/$96k</b></div>
+        <div class="bar"><i id="runway-fill"></i></div>
+      </div>
+      <div class="meter">
+        <div class="lbl"><span>MARKET</span><b>NEUTRAL</b></div>
+        <div class="bar" id="market-bar">
+          <div class="zones"><i class="cold"></i><i class="neut"></i><i class="hot"></i></div>
+          <div id="market-needle"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="ticker-wrap"><div id="ticker">⚠ SOFTWARE BUBBLE FORMING · MULTIPLES DRIFTING UP · CHEAP DEBT WON'T LAST · SELL DON'T BUY ·</div></div>
+
+    <!-- VENTURE RAIL -->
+    <div id="rail-label"><span>VENTURES</span><span>SLOTS 1/2</span></div>
+    <div id="rail">
+      <div class="venture" id="platform">
+        <div class="vname">NIMBUS METRICS</div>
+        <div class="vsector">SOFTWARE · PLATFORM</div>
+        <div class="vstats num"><span class="e" id="p-eb">$310k</span><span class="m" id="p-mu">11.0×</span></div>
+        <div class="vown">own 64% · debt $1.20M</div>
+      </div>
+    </div>
+
+    <!-- PLAYS STRIP -->
+    <div id="plays-strip">
+      <span class="pl-lbl">PLAYS</span>
+      <span class="play-chip">BRIDGE LOAN</span>
+      <span class="play-chip empty">+</span>
+      <span class="pl-lbl" style="margin-left:auto">held 1/2</span>
+    </div>
+
+    <!-- HAND -->
+    <div id="hand-area">
+      <div id="hand-label"><span>THIS ROUND'S DEALS</span><span class="plays" id="plays-ct">⚡ 2/3 PLAYS</span></div>
+      <div id="hand">
+        <div class="card" id="card-addon" onclick="openNapkin()">
+          <span class="ctype addon">ADD-ON</span>
+          <div class="cname">Micro-SaaS Tuck-in</div>
+          <div class="crow"><span class="k">EBITDA</span><span class="v">$40k/rd</span></div>
+          <div class="crow"><span class="k">MULT</span><span class="v">4.5×</span></div>
+          <div class="crow"><span class="k">SECTOR</span><span class="v">SW</span></div>
+          <div class="cprice">BUY $180k</div>
+        </div>
+        <div class="card">
+          <span class="ctype raise">RAISE</span>
+          <div class="cname">Series A Term Sheet</div>
+          <div class="crow"><span class="k">CASH</span><span class="v">+$800k</span></div>
+          <div class="crow"><span class="k">OWN</span><span class="v">−dilute</span></div>
+          <div class="crow"><span class="k">&nbsp;</span><span class="v">&nbsp;</span></div>
+          <div class="cprice">NEW BOSSES</div>
+        </div>
+        <div class="card">
+          <span class="ctype loan">LOAN</span>
+          <div class="cname">Term Loan</div>
+          <div class="crow"><span class="k">CASH</span><span class="v">+$500k</span></div>
+          <div class="crow"><span class="k">DEBT</span><span class="v">+$500k</span></div>
+          <div class="crow"><span class="k">RATE</span><span class="v">~11%</span></div>
+          <div class="cprice">LEVER UP</div>
+        </div>
+        <div class="card">
+          <span class="ctype exit">EXIT</span>
+          <div class="cname">Acquisition Offer</div>
+          <div class="crow"><span class="k">ROLLS</span><span class="v">6.0×</span></div>
+          <div class="crow"><span class="k">PAPER</span><span class="v">→ CASH</span></div>
+          <div class="crow"><span class="k">&nbsp;</span><span class="v">&nbsp;</span></div>
+          <div class="cprice">CASH OUT</div>
+        </div>
+      </div>
+      <div id="hand-bottom">
+        <span id="reinvest">REINVEST (baseline) ▸</span>
+        <span class="spacer"></span>
+        <button class="btn">REROLL $15k</button>
+        <button class="btn primary">END TURN</button>
+      </div>
+    </div>
+
+    <div id="hint">▲ tap the ADD-ON card</div>
+  </div>
+
+  <!-- NAPKIN OVERLAY -->
+  <div class="overlay" id="napkin">
+    <div class="sheet">
+      <h3>— THE NAPKIN ✎ —</h3>
+      <div class="nrow"><span class="k">You pay</span><span class="v bad">− $180k cash</span></div>
+      <div class="nrow"><span class="k">Platform absorbs</span><span class="v good">+ $40k EBITDA</span></div>
+      <div class="nrow"><span class="k">Same sector?</span><span class="v good">YES · SOFTWARE</span></div>
+      <div class="nrow"><span class="k">Synergy bonus</span><span class="v good">+ $8k EBITDA</span></div>
+      <div class="nrow"><span class="k">Platform multiple</span><span class="v">11.0× → 11.0× (held)</span></div>
+      <div class="nnote">After commit, its earnings fold in at the platform's multiple. Same-sector deals add synergy and hold the multiple.</div>
+      <div class="actions">
+        <button class="btn" onclick="closeNapkin()">BACK</button>
+        <button class="btn primary" onclick="playDeal()">PLAY THIS DEAL ▸</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARBITRAGE FLASH OVERLAY -->
+  <div class="overlay" id="arb">
+    <div class="flash-wrap">
+      <div id="arb-title">MULTIPLE ARBITRAGE</div>
+      <div id="arb-sub">$48k earnings bought at 4.5× · revalued at <b style="color:var(--mult-red)">11.0×</b></div>
+      <div id="arb-math">
+        <div class="nrow"><span class="k">EBITDA</span><span class="v" id="arb-eb">$310k</span></div>
+        <div class="nrow"><span class="k">MULTIPLE</span><span class="v" style="color:var(--mult-red)">11.0× (held)</span></div>
+        <div class="nrow"><span class="k">ENTERPRISE VALUE</span><span class="v" id="arb-ev">$3.41M</span></div>
+      </div>
+      <div id="arb-headline">+$260,000</div>
+      <div id="arb-headsub">PURE ARBITRAGE · THAT'S ALLOWED?!</div>
+      <button class="btn gold pulse" onclick="dismissArb()" style="font-size:20px; padding:12px 42px;">NICE.</button>
+    </div>
+  </div>
+
+  <div id="crt"></div>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  let played = false;
+
+  function openNapkin() {
+    if (played) return;
+    $('card-addon').classList.add('sel');
+    $('platform').classList.add('target-glow');
+    $('hint').style.display = 'none';
+    $('napkin').classList.add('show');
+  }
+  function closeNapkin() {
+    $('napkin').classList.remove('show');
+    $('card-addon').classList.remove('sel');
+    $('platform').classList.remove('target-glow');
+  }
+
+  function playDeal() {
+    $('napkin').classList.remove('show');
+    $('arb').classList.add('show');
+    // sequence: count EBITDA up, then EV, then headline pop + shake
+    setTimeout(() => countUp('arb-eb', 310, 358, 700, v => '$' + Math.round(v) + 'k'), 350);
+    setTimeout(() => countUp('arb-ev', 3.41, 3.94, 700, v => '$' + v.toFixed(2) + 'M'), 1100);
+    setTimeout(() => {
+      $('arb-headline').classList.add('pop');
+      $('app').classList.add('shake');
+      burstSparks();
+      setTimeout(() => $('app').classList.remove('shake'), 450);
+    }, 1900);
+  }
+
+  function dismissArb() {
+    $('arb').classList.remove('show');
+    if (played) return;
+    played = true;
+    // apply deltas to HUD with ticks + floaters
+    setStat('v-eb', '$358k'); floatDelta('v-eb', '+$48k');
+    setStat('v-cash', '$202k'); floatDelta('v-cash', '−$180k', true);
+    setTimeout(() => { setStat('v-nw', '$1.95M'); floatDelta('v-nw', '+$150k'); }, 250);
+    $('p-eb').textContent = '$358k';
+    $('plays-ct').textContent = '⚡ 1/3 PLAYS';
+    const c = $('card-addon');
+    c.classList.add('dim');
+    c.querySelector('.cprice').textContent = 'ACQUIRED ✓';
+  }
+
+  function setStat(id, txt) {
+    const el = $(id);
+    el.textContent = txt;
+    el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick');
+  }
+
+  function floatDelta(anchorId, text, neg) {
+    const a = $(anchorId).getBoundingClientRect();
+    const p = $('phone').getBoundingClientRect();
+    const f = document.createElement('div');
+    f.className = 'float-delta' + (neg ? ' neg' : '');
+    f.textContent = text;
+    f.style.left = (a.left - p.left) + 'px';
+    f.style.top = (a.top - p.top - 8) + 'px';
+    $('phone').appendChild(f);
+    setTimeout(() => f.remove(), 1300);
+  }
+
+  function countUp(id, from, to, ms, fmt) {
+    const el = $(id), t0 = performance.now();
+    el.style.color = 'var(--good)';
+    (function step(t) {
+      const k = Math.min(1, (t - t0) / ms);
+      const ease = 1 - Math.pow(1 - k, 3);
+      el.textContent = fmt(from + (to - from) * ease);
+      if (k < 1) requestAnimationFrame(step);
+    })(t0);
+  }
+
+  function burstSparks() {
+    const h = $('arb-headline').getBoundingClientRect();
+    const p = $('phone').getBoundingClientRect();
+    for (let i = 0; i < 18; i++) {
+      const s = document.createElement('div');
+      s.className = 'spark';
+      const ang = Math.random() * Math.PI * 2, d = 60 + Math.random() * 90;
+      s.style.setProperty('--dx', Math.cos(ang) * d + 'px');
+      s.style.setProperty('--dy', Math.sin(ang) * d + 'px');
+      s.style.left = (h.left - p.left + h.width / 2) + 'px';
+      s.style.top = (h.top - p.top + h.height / 2) + 'px';
+      s.style.background = ['#f2b736', '#69d671', '#f4efe6'][i % 3];
+      $('phone').appendChild(s);
+      setTimeout(() => s.remove(), 850);
+    }
+  }
+</script>
+</body>
+</html>

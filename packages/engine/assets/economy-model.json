@@ -1,0 +1,205 @@
+{
+  "$schema": "MULTIPLES economy model v1 — mirror of docs/01-economy-math-spec.md",
+  "version": "1.1.0-first-pass-floor-checked",
+  "money": { "internalUnit": "integer cents", "display": "k/M/B suffix, forced en-US grouping" },
+  "fixedPoint": {
+    "multiple": "milli-units x1000 (14x = 14000)",
+    "ownership": "basis points x10000 (80% = 8000)",
+    "money": "integer cents",
+    "roundingRule": "truncate toward zero (Math.trunc) on every fixed-point multiply/divide; no float in the rules core; deterministic across iOS/Android"
+  },
+  "constants": {
+    "startCash": 2000000,
+    "startEbitda": 600000,
+    "startSector": "SOFTWARE",
+    "startMultiple": 6000,
+    "startOwnership": 10000,
+    "startNetDebt": 0,
+    "cashYield": 0.35,
+    "organicGrowthDefault": 0.20,
+    "carrySeedFrac": 0.37,
+    "reseedMult": 8000,
+    "interestMin": 0.08,
+    "interestMax": 0.12,
+    "targetLeverage": 3.0,
+    "dangerLeverage": 6.0,
+    "reinvestStart": 0.55,
+    "reinvestEnd": 0.35,
+    "synergySameSector": 0.20,
+    "congDiscountPerAddon": 0.08,
+    "recapPct": 0.16,
+    "bridgeLoanRepayMul": 1.15,
+    "_note": "startCash/startEbitda in cents ($20,000 / $6,000). startMultiple 6x is a low seed, NOT the SOFTWARE base 14x. seed NetWorth = $56,000. congDiscountPerAddon is a POSITIVE magnitude applied as multiple *= (1 - 0.08)."
+  },
+  "formulas": {
+    "F1_enterpriseValue": "EV = trunc(EBITDA * Multiple / 1000)",
+    "F2_equityValue": "Equity = EV - NetDebt",
+    "F3_netWorth": "NetWorth = SUM(trunc(Ownership_bp * Equity / 10000)) + Cash",
+    "F4_interest": "Interest = trunc(Rate_bp * totalNetDebt / 10000), charged in cash each OPERATE",
+    "F5_dilution": "newOwn_bp = trunc(oldOwn_bp * preMoney / (preMoney + raise)); preMoney = current Equity",
+    "F6_bankruptcy": "Run ends when cash < 0 after interest is charged in OPERATE (cash is NOT clamped at 0; deficit is not rolled into netDebt)",
+    "tierClear": "tier cleared in DEADLINE_CHECK the first round mark-to-market NetWorth >= tierBar, on or before deadline",
+    "arbitrageFlash": "RENDER-ONLY: accretion = trunc(ebitda_addon * (m_platform - m_buy) / 1000); written to NO field",
+    "multipleStored": "multiple is a STORED mutable field; market drift is an additive delta: multiple += trunc(multiple * (driftFactor - 1)); never resampled from sectorBase",
+    "driftDelta": "driftFactor = stateFactor * (1 + sectorVol * tri), tri in [-1,1] triangular draw; multiple = max(1000, multiple + trunc(multiple*(driftFactor-1)))",
+    "reinvestEff": "reinvestEff(progress) = reinvestStart + (reinvestEnd - reinvestStart) * min(1, progress); progress = roundInTier(zero-indexed) / deadline",
+    "synergySameSector": "ebitda += addon.ebitda + trunc(addon.ebitda * synergySameSector); multiple unchanged",
+    "congDrag": "multiple = trunc(multiple * (1 - congDiscountPerAddon)) per cross-sector add-on (unit = one add-on; stacks multiplicatively as 0.92^n)",
+    "addonPrice": "price = trunc(addon.ebitda * m_buy / 1000); cash -= price; netDebt += faceDebt",
+    "exit": "exitEV = trunc(ebitda * exitMultiple / 1000); proceeds = trunc((exitEV - netDebt) * ownership / 10000); cash += proceeds; remove venture",
+    "exitMultiple": "hotWindowArmed ? sectorHotMultiple : min(offer.multiple, sectorLiveMultiple)",
+    "dividendRecap": "cash += trunc(EV * recapPct); netDebt += trunc(EV * recapPct)",
+    "reseed": "seedEbitda = trunc(carrySeedFrac * NetWorth * 1000 / reseedMult); deltas applied via resolver as a system event (obeys invariant, logged)",
+    "decay": "ebitda -= trunc(ebitda * decayRate[min(roundsNeglected,3)]); multiple -= trunc(multiple * multDecayRate); halved for passive ventures"
+  },
+  "roundOrder": [
+    "1. market drift roll (state, sectorDrift, roundsInState)",
+    "2. apply drift delta to each venture stored multiple (floor 1000)",
+    "3. cash += SUM(trunc(ebitda * cashYield)) + partner/organicGrowth engines",
+    "4. neglect decay on ventures with roundsNeglected>=1, then increment",
+    "5. resolve event cards as deltas",
+    "6. charge interest: cash -= interestDue; if cash<0 -> BANKRUPTCY",
+    "7. recompute meters -> ACT -> SHOP -> DEADLINE_CHECK"
+  ],
+  "sectors": [
+    { "name": "SOFTWARE",   "baseMultiple": 14000, "volatility": 0.30, "signature": "Steady earnings but spiky multiple; bubbles hardest, highest ceiling, whips most in a crunch." },
+    { "name": "SERVICES",   "baseMultiple": 5000,  "volatility": 0.22, "signature": "Labor-heavy; EBITDA spiky round-to-round, modest multiple." },
+    { "name": "RETAIL",     "baseMultiple": 3000,  "volatility": 0.10, "signature": "Cash-rich but multiple-poor; high cash yield flavour, low valuation ceiling." },
+    { "name": "INDUSTRIAL", "baseMultiple": 8000,  "volatility": 0.12, "signature": "Asset-heavy, slow, crash-resistant; the defensive holdco anchor at T4." },
+    { "name": "CONSUMER",   "baseMultiple": 6000,  "volatility": 0.15, "signature": "POST-LAUNCH (GDD §8 Q6): brand-y mid-multiple, steady. Reputation-GATED — unlocks on beating the game; not in the base draw pool." },
+    { "name": "MEDIA",      "baseMultiple": 16000, "volatility": 0.35, "signature": "POST-LAUNCH (GDD §8 Q6): SOFTWARE++ — highest multiple, highest vol, whips hardest in a bubble/crunch. Reputation-GATED; unlocks on beating the game." }
+  ],
+  "_sectorsNote": "baseMultiple in milli-units. Used ONLY to seed a new venture's multiple at creation and as sectorNorm for exit-quality reputation; NOT a per-round resample source. CONSUMER + MEDIA are the two POST-LAUNCH sectors (GDD §8 Q6): they parse + carry economy bands but are reputation-gated out of the base draw pool until the player beats the game (meta.dart kPostLaunchSectors / applyUnlocks).",
+  "tierBars": [
+    { "tier": 1, "bar": 100000000,    "deadlineRounds": 9,  "who": "Scrappy founder, bootstrapped",        "floorMedianClearRound": 5, "floorClearPct": 0.77, "barDisplay": "$1M" },
+    { "tier": 2, "bar": 1000000000,   "deadlineRounds": 10, "who": "You raise (dilution wall)",            "floorMedianClearRound": 7, "floorClearPct": 0.46, "barDisplay": "$10M" },
+    { "tier": 3, "bar": 10000000000,  "deadlineRounds": 9,  "who": "The fork: exit serial or empire",      "floorMedianClearRound": 7, "floorClearPct": 0.41, "barDisplay": "$100M" },
+    { "tier": 4, "bar": 100000000000, "deadlineRounds": 10, "who": "You become the money",                 "floorMedianClearRound": 7, "floorClearPct": 0.40, "barDisplay": "$1B" }
+  ],
+  "_tierBarsNote": "bar values in integer cents; barDisplay is the human label",
+  "curves": {
+    "optimalGrowth": {
+      "designTarget": "~1.45x early-tier decaying to ~1.2x late-tier",
+      "perTierLine": [
+        { "tier": 1, "growthNeeded": 17.9, "requiredPerRound": 1.42, "realisticEarly": null, "realisticLate": null, "note": "from $56k SEED net worth, not $20k pocket cash" },
+        { "tier": 2, "growthNeeded": 10.0, "requiredPerRound": 1.33, "realisticEarly": 1.45, "realisticLate": 1.25 },
+        { "tier": 3, "growthNeeded": 10.0, "requiredPerRound": 1.29, "realisticEarly": 1.45, "realisticLate": 1.20 },
+        { "tier": 4, "growthNeeded": 10.0, "requiredPerRound": 1.26, "realisticEarly": 1.40, "realisticLate": 1.18 }
+      ],
+      "note": "decay forced by reinvestDecay; player must switch levers (arbitrage/leverage/exit) to hold the line"
+    },
+    "reinvestDecay": {
+      "start": 0.55,
+      "end": 0.35,
+      "formula": "start + (end - start) * min(1, roundInTier/deadline); roundInTier zero-indexed; clamps to end past deadline",
+      "samples": [
+        { "progress": 0.00, "eff": 0.55 },
+        { "progress": 0.25, "eff": 0.50 },
+        { "progress": 0.50, "eff": 0.45 },
+        { "progress": 0.75, "eff": 0.40 },
+        { "progress": 1.00, "eff": 0.35 }
+      ]
+    },
+    "interestBand": {
+      "normal": { "min": 0.08, "max": 0.12, "rateMul": 1.0, "financing": "open" },
+      "bubble": { "min": 0.072, "max": 0.108, "rateMul": 0.9, "financing": "open, cheap" },
+      "crunch": { "min": 0.104, "max": 0.156, "rateMul": 1.3, "financing": "new TAKE_DEBT and financing cards DISABLED or COLD-priced (GDD Q3); existing debt still accrues at spiked rate" },
+      "formula": "rate = (interestMin + (interestMax-interestMin)*U[0,1]) * marketRateMul; U from one mulberry32 draw"
+    },
+    "driftModel": {
+      "states": ["normal", "bubble", "crunch"],
+      "stateDurationRounds": [2, 3],
+      "transitionAtBoundary": { "bubble": 0.18, "crunch": 0.12, "normal": 0.70 },
+      "driftBubble": 1.35,
+      "driftCrunch": 0.75,
+      "perVentureJitter": "driftFactor = stateFactor * (1 + sectorVol * tri); tri in [-1,1] = (u1+u2-1) two uniform draws (triangular), deterministic from RNG cursor",
+      "application": "ADDITIVE delta to stored multiple in OPERATE step 2; never a resample of sectorBase",
+      "telegraph": "next-round direction shown by HOT/COLD gauge; magnitude never revealed",
+      "sticky": true,
+      "deterministicSeed": true,
+      "note": "semi-deterministic, readable a round ahead; never a hidden stochastic surprise"
+    },
+    "dangerLeverage": {
+      "safe": [0, 3.0],
+      "stretched": [3.0, 6.0],
+      "danger": 6.0,
+      "gauge": "Interest(maxCrunchRate, totalNetDebt) vs projectedCash turns red a full round before possible F6",
+      "metric": "netDebt / EBITDA"
+    }
+  },
+  "synergyAndConglomerate": {
+    "sameSector": { "ebitdaBonus": 0.20, "multipleDrag": 0.0 },
+    "crossSector": { "ebitdaBonus": 0.0, "multipleDragPerAddon": 0.08, "unit": "one cross-sector add-on", "stacking": "multiplicative: 0.92^n" },
+    "note": "flat +20% same-sector in v1; escalating-curve alternative flagged for full-model Monte-Carlo"
+  },
+  "decay": {
+    "metric": "roundsNeglected (reset to 0 by any Act targeting the venture)",
+    "byNeglect": [
+      { "rounds": 1, "ebitdaRate": 0.04, "multRate": 0.0 },
+      { "rounds": 2, "ebitdaRate": 0.08, "multRate": 0.03 },
+      { "rounds": 3, "ebitdaRate": 0.15, "multRate": 0.06 }
+    ],
+    "passiveMultiplier": 0.5,
+    "note": "GDD Q4 locked: 1 neglected round = small dip, 3 = real pain. Passive (Hire-CEO) ventures decay at half rate and grow slower."
+  },
+  "plays": {
+    "BRIDGE_LOAN":    { "deltas": "cash += X; netDebt += trunc(X * 1.15)" },
+    "SECONDARY_SALE": { "deltas": "ownership -= dBp; cash += trunc(ventureEquity * dBp / 10000)" },
+    "DOWN_ROUND":     { "deltas": "cash += X; ownership -= bigBp" },
+    "TENDER":         { "deltas": "cash -= cost; ownership += dBp" },
+    "DIVIDEND_RECAP": { "gate": "tier>=2", "deltas": "cash += trunc(EV*recapPct); netDebt += trunc(EV*recapPct)", "warning": "can be fatal; classic F6 setup" },
+    "HOT_WINDOW":     { "deltas": "none; arms market.hotWindowArmed for next EXIT" },
+    "ASSET_STRIP":    { "deltas": "cash += X; ebitda -= d" },
+    "SPIN_OFF":       { "deltas": "cash += lockedEquity; remove venture (frees SLOT)" },
+    "EARN_OUT":       { "deltas": "cash += 0 now; deferred cash -= trunc(pct*ebitda) for N rounds" },
+    "MARKET_READ":    { "deltas": "none; sets market.marketReadHint (direction only)" }
+  },
+  "resolverInputs": {
+    "fields": ["ebitda", "multiple", "netDebt", "ownership", "cash"],
+    "invariant": "every card/consumable/event AND every system event (drift, decay, organicGrowth, reseed) may ONLY mutate these five fields via a {deltas} object; NEVER a flat +score",
+    "clamps": {
+      "ebitda": ">= 0 per venture",
+      "multiple": ">= 1000 (1.0x) for a live venture",
+      "netDebt": "may exceed EV (negative equity allowed)",
+      "ownership": "0 <= own <= 10000 bp",
+      "cash": "NOT clamped at 0; cash < 0 after interest charge = bankruptcy (F6)"
+    },
+    "systemEventsThroughResolver": ["marketDrift", "neglectDecay", "organicGrowthDefault", "tierReseed"],
+    "directionalityRule": "magnitudes gamified; signs/structure real (leverage magnifies both ways, arbitrage accretive, dilution shrinks slice)"
+  },
+  "tuningKnobs": [
+    { "name": "carrySeedFrac", "value": 0.37, "note": "biggest difficulty lever; momentum carried between tiers. Up=easier. R12 tune: was 0.24 (full-model floor T2 clear measured 2.5%; post-reseed demand eased to ~1.39x/round)." },
+    { "name": "deadlineRounds", "value": [9, 10, 9, 10], "note": "T2 is the squeeze; loosen here first if floor death-rate >40%. R12 tune: T2 8 -> 10 (the doc 01 §8 trigger fired at 42.4%); T1 8 -> 9 for tutorial-tier feel (floor missed-deadline 26% -> 18%)." },
+    { "name": "organicGrowthDefault", "value": 0.20, "note": "raises floor without touching skill ceiling; attributed to seed/hired partner, not free engine drift. R12 tune: was 0.10 (floor compounding sat under every tier's needed rate; floor win 4-7%)." },
+    { "name": "reinvestStart", "value": 0.55, "note": "with reinvestEnd controls how hard lever-switching is forced." },
+    { "name": "reinvestEnd", "value": 0.35, "note": "raise to flatten (easier), lower to steepen (harder)." },
+    { "name": "interestMax", "value": 0.12, "note": "down raises the bankruptcy floor for levered play. R12 tune: was 0.14 (a top-of-band neutral draw out-billed the 0.35 cash yield from ~2.5x leverage; greedy bankruptcy 22%)." },
+    { "name": "dangerLeverage", "value": 6.0, "note": "how greedy a player can get before the gauge turns red." },
+    { "name": "synergySameSector", "value": 0.20, "note": "reward for focused roll-ups; watch for runaway accretion." },
+    { "name": "congDiscountPerAddon", "value": 0.08, "note": "steepness of the conglomerate self-limit; positive magnitude, multiple *= (1-this)." },
+    { "name": "recapPct", "value": 0.16, "note": "dividend-recap aggression; primary greed-death dial alongside crunch. R12 tune: was 0.30 (one pull landed ~2.4x EBITDA of debt at a stroke; greedy lived AT its leverage line and died out of band)." },
+    { "name": "decayRate", "value": [0.04, 0.08, 0.15], "note": "neglect punisher by rounds neglected; halved for passive ventures." },
+    { "name": "driftCrunch", "value": 0.75, "note": "greed-punishment dial; tune so greedy bankruptcy ~8-12%." },
+    { "name": "crunchRateMul", "value": 1.3, "note": "interest spike in a crunch; primary F6 trigger for over-levered play. R12 tune: was 1.8 (with crunch entry 0.18 -> 0.12 in curves.driftModel.transitionAtBoundary — together they put greedy bankruptcy in the 8-12% band instead of 22-30%)." }
+  ],
+  "outOfScope": {
+    "reputationAccrual": "full reputation curve lives in meta layer (doc 02 MetaState); this doc only defines sectorNorm = sectorBase so exit-quality term (exitMultiple/sectorNorm*ownership) is computable"
+  },
+  "simCheck": {
+    "harness": "prototype/sim-check.js",
+    "runs": 5000,
+    "rng": "seeded mulberry32",
+    "scope": "FLOOR-ONLY smoke test: organic growth + lever-to-target + reinvest + market-ride. Does NOT model arbitrage, synergy, exits, decay, PLAYS, or crunch-disabled financing.",
+    "floorStrategy": "each round: (1) debt up to targetLeverage*EBITDA if not crunch; (2) reinvest free cash above a 1-round interest buffer at reinvestEff(progress); (3) never exit/arbitrage; (4) advance when NetWorth>=bar. Greedy variant: lever to 5.8x, no buffer.",
+    "floor": {
+      "overallWinRate": 0.402,
+      "bankruptcyRate": 0.0,
+      "perTierClearPct": { "T1": 0.773, "T2": 0.456, "T3": 0.410, "T4": 0.402 },
+      "missedDeadlineByTier": { "T1": 0.227, "T2": 0.317, "T3": 0.046, "T4": 0.008 }
+    },
+    "greedy": { "winRate": 0.734, "bankruptcyRate": 0.090 },
+    "verdict": "WINNABLE-BUT-TIGHT (floor only)",
+    "acceptanceGate": { "floorWinRate": [0.25, 0.42], "greedyBankruptcy": [0.08, 0.12] },
+    "fullModelMonteCarlo": "P1 deliverable: rebuild harness with synergy/arbitrage/exits/decay/PLAYS before claiming full validation"
+  }
+}

@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>MULTIPLES — Layout B: THE CORNER OFFICE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&family=VT323&family=Pixelify+Sans:wght@400;600;700&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* the corner-office palette */
+    --walnut-1: #5a3a22;
+    --walnut-2: #3c2415;
+    --walnut-3: #2a1709;
+    --leather: #1f3d2c;        /* hunter green desk pad */
+    --leather-dk: #142a1e;
+    --brass-1: #ecc97c;
+    --brass-2: #c2953f;
+    --brass-3: #8a6325;
+    --brass-ink: #3a2807;
+    --paper: #f4ead0;          /* cream document */
+    --paper-2: #efe3c2;
+    --paper-edge: #c9b88c;
+    --typ-ink: #2e2418;        /* typewriter ink */
+    --led-on: #7dffa0;         /* calculator LED */
+    --led-bg: #0c1f12;
+    --ink-red: #b1342c;        /* stamp / red ink */
+    --ink-blue: #2c4a7a;       /* ballpoint blue */
+    --good: #2e7d44;
+    --bad: #b1342c;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body { height:100%; background:#15100a; }
+  body {
+    font-family:'Courier Prime', monospace; color:var(--typ-ink);
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+  }
+
+  /* ============ THE PHONE = TOP-DOWN VIEW OF THE DESK ============ */
+  #phone {
+    position:relative; width:412px; height:860px; max-height:100vh;
+    border-radius:22px; overflow:hidden;
+    /* walnut slab: warm gradient + repeating grain streaks */
+    background:
+      repeating-linear-gradient(94deg,
+        rgba(0,0,0,0) 0px, rgba(0,0,0,.10) 3px, rgba(0,0,0,0) 7px,
+        rgba(255,210,140,.05) 11px, rgba(0,0,0,0) 14px, rgba(0,0,0,.07) 21px, rgba(0,0,0,0) 26px),
+      repeating-linear-gradient(91deg,
+        rgba(40,18,4,.16) 0 1px, transparent 1px 9px),
+      radial-gradient(ellipse 130% 80% at 50% 18%, var(--walnut-1) 0%, var(--walnut-2) 60%, var(--walnut-3) 100%);
+    box-shadow: 0 0 0 6px #000, 0 0 70px rgba(0,0,0,.85);
+  }
+  /* desk lamp glow from the top-left corner */
+  #phone::before {
+    content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
+    background: radial-gradient(ellipse 70% 42% at 22% 4%, rgba(255,214,140,.18), transparent 65%);
+  }
+  /* gentle vignette so the desk reads as a lit surface */
+  #vignette {
+    position:absolute; inset:0; z-index:80; pointer-events:none;
+    background: radial-gradient(ellipse 95% 85% at 50% 42%, transparent 58%, rgba(10,5,0,.5) 100%);
+    mix-blend-mode:multiply;
+  }
+  #app { position:absolute; inset:0; z-index:2; display:flex; flex-direction:column; padding:10px 10px 8px; }
+  #app.shake { animation: shake .42s linear; }
+  @keyframes shake {
+    0%,100% { transform:translate(0,0) rotate(0); }
+    15% { transform:translate(-5px,3px) rotate(-.5deg); }
+    30% { transform:translate(5px,-3px) rotate(.5deg); }
+    45% { transform:translate(-4px,-2px) rotate(-.4deg); }
+    60% { transform:translate(4px,2px) rotate(.4deg); }
+    80% { transform:translate(-2px,1px) rotate(-.2deg); }
+  }
+
+  /* ============ shared materials ============ */
+  .brass {
+    background: linear-gradient(180deg, var(--brass-1) 0%, var(--brass-2) 55%, var(--brass-3) 100%);
+    border:2px solid #5d4015;
+    box-shadow: inset 0 1px 0 rgba(255,245,210,.8), inset 0 -2px 3px rgba(60,35,5,.5), 0 3px 0 #1d1206;
+    color:var(--brass-ink);
+  }
+  .screwL::before, .screwR::after {
+    content:"+"; position:absolute; top:50%; transform:translateY(-54%);
+    font-family:'Courier Prime'; font-size:11px; color:#6b4d1d;
+    text-shadow:0 1px 0 rgba(255,240,200,.55);
+  }
+  .screwL::before { left:7px; } .screwR::after { right:7px; }
+  .num { font-family:'VT323', monospace; }
+
+  /* ============ 1. BRASS NAMEPLATE (tier/round bar) ============ */
+  #nameplate {
+    position:relative; height:36px; border-radius:7px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Special Elite', serif; font-size:14.5px; letter-spacing:1.6px;
+    text-shadow: 0 1px 0 rgba(255,246,214,.65);
+  }
+
+  /* ============ 2. MONEY ROW: cash tray (solid) vs certificate (ghost) ============ */
+  #money-row { display:flex; gap:8px; margin-top:7px; flex-shrink:0; }
+  /* CASH — brass money clip tray. Heavy. Real. */
+  #cash-tray {
+    flex:1.04; position:relative; border-radius:9px; padding:7px 10px 8px;
+  }
+  #cash-tray .lbl {
+    font-family:'Pixelify Sans'; font-weight:700; font-size:11px; letter-spacing:2px;
+    color:#553b0e; text-shadow:0 1px 0 rgba(255,246,214,.6);
+  }
+  #cash-tray .val {
+    font-family:'VT323'; font-size:36px; line-height:.92; color:#2a1c04;
+    text-shadow: 0 1px 0 rgba(255,248,220,.5);
+  }
+  #cash-tray .clip {  /* the money-clip bar across the bill */
+    position:absolute; right:9px; top:10px; width:34px; height:30px; border-radius:5px;
+    background:linear-gradient(180deg,#f7e3a8,#caa04c 60%,#93702c);
+    border:2px solid #5d4015; box-shadow:inset 0 1px 0 rgba(255,250,225,.9);
+  }
+  #cash-tray .clip i {
+    position:absolute; left:6px; right:6px; top:6px; height:3px; background:#7a5a1e; border-radius:2px;
+    box-shadow:0 7px 0 #7a5a1e, 0 14px 0 #7a5a1e;
+  }
+  /* NET WORTH — framed paper certificate. Ghost. Unspendable. */
+  #certificate {
+    flex:1; position:relative; border-radius:6px; padding:6px 9px 7px;
+    background:
+      repeating-linear-gradient(0deg, transparent 0 9px, rgba(120,95,50,.07) 9px 10px),
+      linear-gradient(160deg, #f7efd8, #ece0bd);
+    border:3px double #9d8a5c;             /* thin double frame = the ghost treatment */
+    box-shadow: 0 2px 5px rgba(0,0,0,.35);
+    color:#6f6244;
+  }
+  #certificate .lbl {
+    font-family:'Special Elite'; font-size:10.5px; letter-spacing:1.4px; color:#857448;
+  }
+  #certificate .val { font-family:'VT323'; font-size:33px; line-height:.95; color:#6b5e3e; opacity:.88; }
+  #certificate .watermark {
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-family:'Special Elite'; font-size:11.5px; letter-spacing:1.5px; color:rgba(110,90,40,.30);
+    transform:rotate(-7deg); pointer-events:none; white-space:nowrap;
+  }
+
+  /* ============ 3. DESK CALCULATOR — the four levers in LED ============ */
+  #calc {
+    margin-top:7px; flex-shrink:0; border-radius:8px; padding:5px 8px 6px;
+    background:linear-gradient(180deg,#d9cfb4,#bdb091);
+    border:2px solid #4a3c22; box-shadow:0 3px 0 #241c0c, inset 0 1px 0 rgba(255,255,240,.7);
+    display:flex; align-items:center; gap:8px;
+  }
+  #calc .brand { font-family:'Pixelify Sans'; font-weight:700; font-size:9px; color:#6a5a36; letter-spacing:1px; width:38px; line-height:1.15; }
+  #lcd {
+    flex:1; display:flex; border-radius:5px; background:var(--led-bg);
+    border:2px solid #061008; box-shadow: inset 0 2px 6px rgba(0,0,0,.85);
+    padding:3px 6px 4px; gap:4px;
+  }
+  #lcd .seg { flex:1; text-align:center; }
+  #lcd .seg .k { font-family:'Pixelify Sans'; font-size:8.5px; letter-spacing:1px; color:#3f7a52; display:block; }
+  #lcd .seg .v {
+    font-family:'VT323'; font-size:22px; line-height:.95; color:var(--led-on);
+    text-shadow:0 0 7px rgba(125,255,160,.55);
+  }
+  #lcd .seg .v.tick { animation: tickpop .5s ease; }
+  @keyframes tickpop { 0%{transform:scale(1);} 35%{transform:scale(1.4);} 100%{transform:scale(1);} }
+
+  /* ============ 4. METERS: hourglass + barometer ============ */
+  #meters { display:flex; gap:8px; margin-top:7px; flex-shrink:0; }
+  .gauge {
+    flex:1; border-radius:8px; padding:5px 8px 6px; position:relative;
+    background:linear-gradient(180deg, rgba(20,10,2,.45), rgba(20,10,2,.6));
+    border:2px solid #6b4a23; box-shadow: inset 0 0 0 1px rgba(236,201,124,.22), 0 2px 0 #1b0f04;
+    color:#e8d9b0;
+  }
+  .gauge .glbl { font-family:'Pixelify Sans'; font-weight:600; font-size:10px; letter-spacing:1.5px; color:#cfa75c; }
+  /* runway hourglass */
+  #runway-box { display:flex; align-items:center; gap:8px; }
+  #hourglass {
+    width:20px; height:30px; flex-shrink:0;
+    clip-path: polygon(0 0,100% 0,58% 50%,100% 100%,0 100%,42% 50%);
+    background:
+      linear-gradient(180deg, #e6c878 0 34%, rgba(230,200,120,.12) 34% 62%, #e6c878 62% 100%);
+    box-shadow: inset 0 0 0 2px #8a6325;
+  }
+  #runway-box .rtxt { line-height:1.25; }
+  #runway-box .rtxt .due { font-family:'VT323'; font-size:17px; color:#f0e2bb; display:block; }
+  #runway-box .rtxt .ok { font-family:'Pixelify Sans'; font-weight:700; font-size:11px; color:#7fd98f; letter-spacing:1px; }
+  /* market barometer */
+  #baro-face {
+    position:relative; width:80px; height:40px; margin:1px auto 0;
+    border-radius:80px 80px 0 0; overflow:hidden;
+    background: conic-gradient(from 270deg at 50% 100%,
+      #3b6ea5 0deg 60deg, #56604f 60deg 120deg, #a8403e 120deg 180deg);
+    border:2px solid #8a6325; border-bottom:none;
+    box-shadow: inset 0 0 8px rgba(0,0,0,.55);
+  }
+  #baro-needle {
+    position:absolute; left:50%; bottom:0; width:3px; height:34px; margin-left:-1.5px;
+    background:#f4ead0; border-radius:2px 2px 0 0; transform-origin:50% 100%;
+    transform:rotate(16deg); box-shadow:0 0 3px rgba(0,0,0,.6);
+  }
+  #baro-hub { position:absolute; left:50%; bottom:-5px; width:10px; height:10px; margin-left:-5px; border-radius:50%; background:#caa04c; border:2px solid #5d4015; }
+  #baro-row { display:flex; align-items:center; justify-content:space-between; gap:4px; }
+  #baro-scale { display:flex; justify-content:space-between; width:80px; margin:1px auto 0; font-family:'Pixelify Sans'; font-size:7.5px; letter-spacing:.4px; color:#bca06a; }
+  #baro-read { font-family:'Pixelify Sans'; font-weight:700; font-size:11px; color:#e8d9b0; letter-spacing:1px; text-align:right; line-height:1.3; }
+
+  /* ============ 5. TELEX STRIP (market banner) ============ */
+  #telex {
+    margin-top:7px; flex-shrink:0; position:relative;
+    background:linear-gradient(180deg,#f2e9cf,#e6d9b4);
+    border-left:2px dashed #b3a173; border-right:2px dashed #b3a173;
+    box-shadow:0 2px 4px rgba(0,0,0,.4);
+    padding:4px 10px 4px 56px;
+    font-family:'Special Elite'; font-size:11.5px; color:#4a3a22; letter-spacing:.5px;
+    white-space:nowrap; overflow:hidden;
+  }
+  #telex .tag {
+    position:absolute; left:0; top:0; bottom:0; width:48px;
+    background:#4a3a22; color:#f2e9cf; font-family:'Pixelify Sans'; font-size:9px; letter-spacing:1px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  #telex .blink { animation: cursorblink 1.1s steps(1) infinite; }
+  @keyframes cursorblink { 50% { opacity:0; } }
+
+  /* ============ 6. MANILA FOLDER TRAY (ventures) ============ */
+  #tray-lbl { display:flex; justify-content:space-between; font-family:'Pixelify Sans'; font-size:10px; letter-spacing:1.5px; color:#caa86a; padding:6px 4px 3px; flex-shrink:0; }
+  #tray { display:flex; gap:8px; flex-shrink:0; }
+  .folder {
+    flex:1; position:relative; border-radius:3px 8px 4px 4px; padding:6px 9px 7px;
+    background:linear-gradient(180deg,#e0c084,#cdaa66);
+    border:2px solid #8a6c34; box-shadow:0 3px 0 #221504, inset 0 1px 0 rgba(255,240,200,.5);
+    transition: box-shadow .25s, transform .25s;
+  }
+  .folder::before {  /* the folder tab */
+    content:attr(data-tab); position:absolute; top:-11px; left:10px;
+    background:linear-gradient(180deg,#e0c084,#d2af6c); border:2px solid #8a6c34; border-bottom:none;
+    border-radius:5px 5px 0 0; padding:0 8px; height:13px;
+    font-family:'Pixelify Sans'; font-size:8.5px; font-weight:700; letter-spacing:1px; color:#5d4517; line-height:11px;
+  }
+  .folder .fname { font-family:'Special Elite'; font-size:13.5px; color:#33230a; }
+  .folder .fline { font-family:'Courier Prime'; font-weight:700; font-size:11.5px; color:#4f3a14; }
+  .folder .fline .num { font-size:15px; }
+  .folder.empty {
+    background:transparent; border:2px dashed rgba(224,192,132,.4); box-shadow:none;
+    display:flex; align-items:center; justify-content:center;
+    color:rgba(224,192,132,.55); font-family:'Pixelify Sans'; font-size:10px; letter-spacing:1px;
+  }
+  .folder.empty::before { display:none; }
+  .folder.target-glow { animation: targetglow 1s ease-in-out infinite; }
+  @keyframes targetglow {
+    0%,100% { box-shadow:0 3px 0 #221504; }
+    50% { box-shadow:0 3px 0 #221504, 0 0 20px 4px rgba(236,201,124,.6); transform:translateY(-2px); }
+  }
+
+  /* ============ 7. THE DESK PAD (hunter leather) + scattered documents ============ */
+  #pad {
+    position:relative; flex:1; margin-top:13px; border-radius:12px; min-height:0;
+    background:
+      radial-gradient(ellipse 110% 90% at 50% 30%, var(--leather) 0%, var(--leather-dk) 90%),
+      var(--leather);
+    border:3px solid #0c1c12;
+    box-shadow: inset 0 0 26px rgba(0,0,0,.55), 0 3px 0 #120c04;
+  }
+  /* stitched leather border */
+  #pad::before {
+    content:""; position:absolute; inset:6px; border-radius:8px; pointer-events:none;
+    border:1.5px dashed rgba(220,200,150,.28);
+  }
+  /* brass pad corners */
+  .corner { position:absolute; width:26px; height:26px; z-index:3; pointer-events:none;
+    background:linear-gradient(135deg, var(--brass-1), var(--brass-3)); border:2px solid #5d4015; }
+  .corner.tl { top:-3px; left:-3px; border-radius:12px 0 14px 0; clip-path:polygon(0 0,100% 0,0 100%); }
+  .corner.tr { top:-3px; right:-3px; border-radius:0 12px 0 14px; clip-path:polygon(0 0,100% 0,100% 100%); }
+
+  /* the plays counter = a red rubber-stamp imprint on the leather */
+  #plays-stamp {
+    position:absolute; left:50%; top:46%; transform:translate(-50%,-50%) rotate(7deg); z-index:1;
+    border:3px double rgba(225,90,75,.75); border-radius:8px; padding:3px 10px 4px;
+    font-family:'Pixelify Sans'; font-weight:700; font-size:13px; letter-spacing:1.5px;
+    color:rgba(235,100,84,.92); text-align:center; pointer-events:none;
+    mix-blend-mode:screen;
+  }
+  #plays-stamp small { display:block; font-size:8px; letter-spacing:2px; opacity:.8; }
+
+  /* ---- documents (the hand) ---- */
+  .doc {
+    position:absolute; width:182px; cursor:pointer; z-index:2;
+    padding:7px 9px 8px; color:var(--typ-ink);
+    box-shadow: 2px 4px 8px rgba(0,0,0,.5);
+    transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s, filter .3s;
+  }
+  .doc:hover, .doc.sel { transform:translateY(-7px) scale(1.04) rotate(0deg) !important; z-index:6;
+    box-shadow: 3px 12px 18px rgba(0,0,0,.55), 0 0 18px rgba(236,201,124,.35); }
+  .doc .dtag {
+    position:absolute; top:-8px; right:8px; font-family:'Pixelify Sans'; font-weight:700; font-size:9px;
+    letter-spacing:1px; padding:2px 7px 1px; border-radius:3px; color:#fff;
+    box-shadow:0 2px 0 rgba(0,0,0,.4);
+  }
+  .doc .dhead { font-family:'Special Elite'; font-size:10px; letter-spacing:1px; border-bottom:1.5px solid currentColor; padding-bottom:2px; margin-bottom:3px; }
+  .doc .dname { font-family:'Special Elite'; font-size:13px; line-height:1.1; margin-bottom:3px; }
+  .doc .drow { display:flex; justify-content:space-between; font-size:11px; line-height:1.45; }
+  .doc .drow .k { color:#7d6c52; }
+  .doc .drow .v { font-family:'VT323'; font-size:15px; }
+  .doc .dfoot {
+    margin-top:4px; text-align:center; font-family:'Courier Prime'; font-weight:700; font-size:11.5px;
+    border-top:1.5px dashed #b3a173; padding-top:3px; letter-spacing:.5px;
+  }
+  .doc.dim { filter:grayscale(.65) brightness(.72); pointer-events:none; }
+  .doc.deny { animation: deny .3s ease; }
+  @keyframes deny { 25%{ transform:translateX(-4px) rotate(-1deg);} 75%{ transform:translateX(4px) rotate(1deg);} }
+
+  /* ADD-ON = interoffice deal memo (cream, ruled) */
+  #doc-memo {
+    left:8px; top:14px; transform:rotate(-3.2deg);
+    background:
+      repeating-linear-gradient(0deg, transparent 0 13px, rgba(80,110,160,.13) 13px 14px),
+      var(--paper);
+    border:1.5px solid var(--paper-edge);
+  }
+  #doc-memo .dtag { background:var(--ink-blue); }
+  /* RAISE = term sheet (white bond, blue rule) */
+  #doc-term {
+    right:8px; top:6px; transform:rotate(2.4deg);
+    background: linear-gradient(180deg,#fbf7ea,#f3edda);
+    border:1.5px solid #cfc4a4; border-top:5px solid var(--ink-blue);
+  }
+  #doc-term .dtag { background:#6b4f8f; }
+  /* paperclip on the term sheet */
+  #doc-term::after {
+    content:""; position:absolute; top:-10px; left:14px; width:9px; height:24px;
+    border:2.5px solid #9aa3ad; border-radius:5px; border-bottom-width:7px;
+  }
+  /* LOAN = bank letter (pinstripe edge, embossed seal) */
+  #doc-bank {
+    left:11px; bottom:12px; transform:rotate(1.6deg);
+    background:
+      repeating-linear-gradient(90deg, rgba(60,60,90,.05) 0 2px, transparent 2px 7px),
+      #f6efdc;
+    border:1.5px solid #c5b894;
+  }
+  #doc-bank .dtag { background:#9a6a22; }
+  #doc-bank .seal {
+    position:absolute; right:8px; bottom:26px; width:24px; height:24px; border-radius:50%;
+    border:2px solid rgba(120,100,60,.5); display:flex; align-items:center; justify-content:center;
+    font-size:9px; color:rgba(120,100,60,.6); transform:rotate(-12deg);
+    box-shadow: inset 0 0 0 2px rgba(255,255,240,.5);
+  }
+  /* EXIT = buyout offer envelope (manila, wax seal) */
+  #doc-env {
+    right:9px; bottom:8px; transform:rotate(-2.2deg);
+    background:linear-gradient(180deg,#e8d4a4,#dcc488);
+    border:1.5px solid #a88c4e;
+  }
+  #doc-env::before { /* the envelope flap */
+    content:""; position:absolute; left:0; right:0; top:0; height:30px;
+    background:linear-gradient(180deg, rgba(120,90,30,.22), transparent);
+    clip-path:polygon(0 0, 50% 100%, 100% 0);
+    pointer-events:none;
+  }
+  #doc-env .dtag { background:#a3262d; }
+  #doc-env .wax {
+    position:absolute; left:50%; top:18px; transform:translateX(-50%) rotate(6deg);
+    width:22px; height:22px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #d05248, #8f1f1a 70%);
+    border:1.5px solid #6d130f; box-shadow:0 1px 2px rgba(0,0,0,.4);
+    display:flex; align-items:center; justify-content:center;
+    color:#f4d9c0; font-family:'Special Elite'; font-size:10px;
+  }
+  /* the ACQUIRED stamp that lands on the memo */
+  #acq-stamp {
+    position:absolute; left:14px; top:46px; transform:rotate(-13deg) scale(3); opacity:0; z-index:7;
+    border:3px solid var(--ink-red); border-radius:5px; padding:2px 9px;
+    font-family:'Pixelify Sans'; font-weight:700; font-size:16px; letter-spacing:2px; color:var(--ink-red);
+    pointer-events:none;
+  }
+  #acq-stamp.land { animation: stampland .4s cubic-bezier(.5,1.6,.6,1) forwards; }
+  @keyframes stampland {
+    0% { opacity:0; transform:rotate(-13deg) scale(3); }
+    60% { opacity:1; transform:rotate(-13deg) scale(.92); }
+    100% { opacity:.92; transform:rotate(-13deg) scale(1); }
+  }
+
+  #hint {
+    position:absolute; left:0; right:0; top:-1px; z-index:5; text-align:center; pointer-events:none;
+    font-family:'Pixelify Sans'; font-size:11.5px; letter-spacing:1px; color:#ecc97c;
+    text-shadow:0 1px 2px #000; animation: hintpulse 1.6s ease-in-out infinite;
+  }
+  @keyframes hintpulse { 0%,100%{opacity:.55;} 50%{opacity:1;} }
+
+  /* ============ 8. DESK EDGE (bottom controls) ============ */
+  #desk-edge {
+    flex-shrink:0; margin-top:8px; display:flex; align-items:stretch; gap:9px;
+    padding:7px 8px; border-radius:10px;
+    background:
+      repeating-linear-gradient(92deg, rgba(0,0,0,.14) 0 2px, transparent 2px 10px),
+      linear-gradient(180deg,#33200f,#241406);
+    border:2px solid #120a03; box-shadow: inset 0 1px 0 rgba(214,160,90,.25);
+  }
+  /* reinvest = a sticky pen note */
+  #reinvest {
+    flex:0 0 96px; background:#f6e27c; transform:rotate(-2.4deg);
+    border:1px solid #cdb651; box-shadow:2px 3px 5px rgba(0,0,0,.45);
+    font-family:'Caveat', cursive; font-weight:700; font-size:16.5px; line-height:1; color:#3f3410;
+    display:flex; align-items:center; justify-content:center; text-align:center; cursor:pointer;
+    padding:4px;
+  }
+  /* reroll = call the broker (rotary phone) */
+  #reroll {
+    flex:1; border-radius:8px; cursor:pointer; border:2px solid #0c0805;
+    background:linear-gradient(180deg,#4a3325,#2e1d12);
+    box-shadow:0 4px 0 #0c0805, inset 0 1px 0 rgba(220,180,120,.3);
+    color:#e8cf9a; font-family:'Pixelify Sans'; font-weight:700; font-size:12px; letter-spacing:.5px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1.25;
+    transition: transform .06s, box-shadow .06s;
+  }
+  #reroll small { font-size:9.5px; color:#b39563; letter-spacing:1px; }
+  #reroll:active { transform:translateY(3px); box-shadow:0 1px 0 #0c0805; }
+  /* end turn = the brass DAY DONE stamp */
+  #endturn {
+    flex:1.25; position:relative; border-radius:10px; cursor:pointer;
+    font-family:'Pixelify Sans'; font-weight:700; letter-spacing:1.5px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1.15;
+    font-size:16px; transition: transform .06s, box-shadow .06s;
+  }
+  #endturn small { font-family:'Special Elite'; font-size:8.5px; letter-spacing:2px; color:#6b4d18; }
+  #endturn:active { transform:translateY(3px); box-shadow: inset 0 1px 0 rgba(255,245,210,.8), 0 0 0 #1d1206; }
+
+  /* ============ overlays ============ */
+  .overlay {
+    position:absolute; inset:0; z-index:50; display:none;
+    background:rgba(16,9,2,.82); align-items:flex-end; justify-content:center;
+  }
+  .overlay.show { display:flex; }
+
+  /* THE NAPKIN — a cocktail napkin slid onto the desk */
+  #napkin-sheet {
+    width:94%; margin:0 0 14px; position:relative; transform:rotate(-.8deg);
+    background:
+      radial-gradient(circle at 12% 8%, rgba(150,120,60,.08), transparent 30%),
+      repeating-linear-gradient(0deg, transparent 0 26px, rgba(150,130,80,.10) 26px 27px),
+      #faf4e2;
+    border:1.5px solid #d8cba6; border-radius:4px;
+    box-shadow: 0 -4px 24px rgba(0,0,0,.6), inset 0 0 0 6px rgba(190,170,120,.18);
+    padding:13px 18px 15px;
+    animation: sheetup .3s cubic-bezier(.34,1.4,.64,1);
+  }
+  @keyframes sheetup { from { transform:translateY(55%) rotate(-.8deg); opacity:.4; } to { transform:translateY(0) rotate(-.8deg); opacity:1; } }
+  #napkin-sheet h3 {
+    font-family:'Special Elite'; font-size:12px; letter-spacing:3px; color:#8a7548;
+    text-align:center; margin-bottom:6px; font-weight:400;
+  }
+  #napkin-sheet .coffee { /* coffee ring, because corner office */
+    position:absolute; right:14px; top:8px; width:42px; height:42px; border-radius:50%;
+    border:5px solid rgba(150,100,40,.13); pointer-events:none;
+  }
+  .nline {
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:'Caveat', cursive; font-weight:600; font-size:21px; color:#3a3322;
+    border-bottom:1px solid rgba(150,130,80,.25); padding:1px 4px;
+  }
+  .nline .nv { font-weight:700; font-size:23px; }
+  .nline .nv.good { color:var(--good); } .nline .nv.bad { color:var(--bad); }
+  .nnote { font-family:'Caveat', cursive; font-size:17px; color:#7d6c4a; padding:7px 4px 4px; line-height:1.15; }
+  #sig-row { height:34px; position:relative; margin:0 4px 6px; border-bottom:1.5px solid #9d8a5c; }
+  #sig-row .sx { position:absolute; left:0; bottom:2px; font-family:'Caveat'; font-size:16px; color:#9d8a5c; }
+  #sig-path { stroke:#1c2f6b; stroke-width:2.2; fill:none; stroke-linecap:round;
+    stroke-dasharray:340; stroke-dashoffset:340; }
+  #sig-path.signing { animation: signit .65s ease-in forwards; }
+  @keyframes signit { to { stroke-dashoffset:0; } }
+  .nactions { display:flex; gap:10px; }
+  .nbtn {
+    flex:1; padding:10px 6px; text-align:center; cursor:pointer; border-radius:7px;
+    font-family:'Pixelify Sans'; font-weight:700; font-size:14.5px; letter-spacing:.5px;
+    transition:transform .06s, box-shadow .06s; user-select:none; border:2px solid #0c0805;
+  }
+  #btn-back { background:#d9cfb4; color:#4a3c22; box-shadow:0 4px 0 #6b5d3e; }
+  #btn-sign { background:linear-gradient(180deg,#2c4a7a,#1d3458); color:#f1e9d2; box-shadow:0 4px 0 #0d1b30; }
+  .nbtn:active { transform:translateY(3px); box-shadow:0 1px 0 #0c0805 !important; }
+
+  /* ARBITRAGE FLASH */
+  #arb { align-items:center; background:rgba(12,7,1,.9); }
+  #arb .wrap { text-align:center; width:100%; padding:0 20px; }
+  #arb-title {
+    font-family:'Pixelify Sans'; font-weight:700; font-size:31px; letter-spacing:1px;
+    background:linear-gradient(180deg,#f5dc9a,#caa04c); -webkit-background-clip:text; background-clip:text; color:transparent;
+    filter: drop-shadow(0 3px 0 rgba(0,0,0,.7)) drop-shadow(0 0 22px rgba(236,201,124,.4));
+    animation: titlein .5s cubic-bezier(.34,1.8,.64,1);
+  }
+  @keyframes titlein { 0%{transform:scale(.2) rotate(-6deg); opacity:0;} 70%{transform:scale(1.13) rotate(1deg);} 100%{transform:scale(1) rotate(0);} }
+  #arb-sub { font-family:'Special Elite'; font-size:13.5px; color:#bfa97c; margin:7px 0 14px; }
+  #arb-ledger {
+    display:inline-block; text-align:left; margin-bottom:12px; min-width:260px;
+    background:
+      repeating-linear-gradient(0deg, transparent 0 24px, rgba(150,130,80,.12) 24px 25px),
+      #f6efdc;
+    border:1.5px solid #c9b88c; border-radius:3px; padding:9px 16px 10px;
+    box-shadow:2px 5px 14px rgba(0,0,0,.6); transform:rotate(-.6deg);
+  }
+  #arb-ledger .lrow { display:flex; justify-content:space-between; gap:24px; font-family:'Courier Prime'; font-weight:700; font-size:13px; color:#5d4f33; line-height:24px; }
+  #arb-ledger .lrow .lv { font-family:'VT323'; font-size:20px; color:#2e2418; }
+  #arb-headline {
+    font-family:'VT323'; font-size:56px; line-height:1; color:#8df0a4;
+    text-shadow:2px 3px 0 rgba(0,0,0,.65), 0 0 34px rgba(120,235,150,.45);
+    margin:8px 0 2px; opacity:0;
+  }
+  #arb-headline.pop { opacity:1; animation:bigpop .55s cubic-bezier(.34,2,.64,1); }
+  @keyframes bigpop { 0%{transform:scale(.3);} 60%{transform:scale(1.22);} 100%{transform:scale(1);} }
+  #arb-headsub { font-family:'Special Elite'; font-size:12.5px; letter-spacing:2px; color:#8df0a4; opacity:.85; margin-bottom:18px; }
+  #btn-frame {
+    display:inline-block; padding:11px 44px; border-radius:9px; cursor:pointer;
+    font-family:'Pixelify Sans'; font-weight:700; font-size:18px; letter-spacing:1px;
+    animation: framepulse 1.1s ease-in-out infinite;
+  }
+  @keyframes framepulse { 0%,100%{filter:brightness(1);} 50%{filter:brightness(1.3);} }
+
+  /* floating deltas + flying paper bits */
+  .float-delta {
+    position:absolute; z-index:60; font-family:'VT323'; font-size:25px; pointer-events:none;
+    color:#8df0a4; text-shadow:1px 2px 2px rgba(0,0,0,.75);
+    animation: floatup 1.2s ease-out forwards;
+  }
+  .float-delta.neg { color:#ff8a7d; }
+  @keyframes floatup { 0%{opacity:0; transform:translateY(6px);} 15%{opacity:1;} 100%{opacity:0; transform:translateY(-34px);} }
+  .paperbit {
+    position:absolute; z-index:55; width:11px; height:7px; pointer-events:none;
+    background:var(--paper); box-shadow:0 1px 1px rgba(0,0,0,.4);
+    animation: paperfly .9s ease-out forwards;
+  }
+  @keyframes paperfly {
+    0% { opacity:1; transform:translate(0,0) rotate(0); }
+    100% { opacity:0; transform:translate(var(--dx), var(--dy)) rotate(var(--rot)); }
+  }
+</style>
+</head>
+<body>
+<div id="phone">
+  <div id="app">
+
+    <!-- 1 · brass nameplate -->
+    <div id="nameplate" class="brass screwL screwR">TIER 2 &nbsp;·&nbsp; ROUND 3/8 &nbsp;·&nbsp; TARGET $10M</div>
+
+    <!-- 2 · CASH (solid brass tray) then NET WORTH (ghost certificate) -->
+    <div id="money-row">
+      <div id="cash-tray" class="brass">
+        <div class="lbl">CASH</div>
+        <div class="val" id="v-cash">$382k</div>
+        <div class="clip"><i></i></div>
+      </div>
+      <div id="certificate">
+        <div class="watermark">PAPER — UNREALIZED</div>
+        <div class="lbl">NET WORTH</div>
+        <div class="val" id="v-nw">$1.80M</div>
+      </div>
+    </div>
+
+    <!-- 3 · desk calculator: the four levers in LED, canonical order -->
+    <div id="calc">
+      <div class="brand">EXEC-88<br>DESKTOP</div>
+      <div id="lcd">
+        <div class="seg"><span class="k">EBITDA</span><span class="v" id="v-eb">$310k</span></div>
+        <div class="seg"><span class="k">MULT</span><span class="v" id="v-mu">11.0&times;</span></div>
+        <div class="seg"><span class="k">DEBT</span><span class="v" id="v-db">$1.20M</span></div>
+        <div class="seg"><span class="k">OWN</span><span class="v" id="v-ow">64%</span></div>
+      </div>
+    </div>
+
+    <!-- 4 · hourglass (runway) + barometer (market) -->
+    <div id="meters">
+      <div class="gauge">
+        <div class="glbl">RUNWAY</div>
+        <div id="runway-box">
+          <div id="hourglass"></div>
+          <div class="rtxt">
+            <span class="due num">$48k due / $96k proj</span>
+            <span class="ok">&#10003; OK</span>
+          </div>
+        </div>
+      </div>
+      <div class="gauge">
+        <div class="glbl">MARKET</div>
+        <div id="baro-row">
+          <div>
+            <div id="baro-face"><div id="baro-needle"></div><div id="baro-hub"></div></div>
+            <div id="baro-scale"><span>COLD</span><span>NEUT</span><span>HOT</span></div>
+          </div>
+          <div id="baro-read">NEUTRAL<br><span style="color:#bca06a;font-size:9px">leaning hot</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5 · telex strip -->
+    <div id="telex"><span class="tag">TELEX</span>SOFTWARE BUBBLE FORMING &middot; SELL DON'T BUY<span class="blink">&#9608;</span></div>
+
+    <!-- 6 · manila folder tray -->
+    <div id="tray-lbl"><span>PORTFOLIO TRAY</span><span>SLOTS 1/2</span></div>
+    <div id="tray">
+      <div class="folder" id="folder-nimbus" data-tab="PLATFORM">
+        <div class="fname">NIMBUS METRICS</div>
+        <div class="fline">SOFTWARE &middot; <span class="num" id="p-eb">$310k</span> @ <span class="num">11.0&times;</span> &middot; own 64%</div>
+      </div>
+      <div class="folder empty">SLOT 2 — EMPTY</div>
+    </div>
+
+    <!-- 7 · the desk pad: this round's papers -->
+    <div id="pad">
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div id="hint">&#9660; today's papers &middot; open the DEAL MEMO</div>
+      <div id="plays-stamp">&#9889; <span id="plays-ct">2/3</span> PLAYS<small>THROUGHPUT</small></div>
+
+      <!-- ADD-ON · interoffice deal memo -->
+      <div class="doc" id="doc-memo" onclick="openNapkin()">
+        <span class="dtag">ADD-ON</span>
+        <div class="dhead">INTEROFFICE DEAL MEMO</div>
+        <div class="dname">RE: Micro-SaaS Tuck-in</div>
+        <div class="drow"><span class="k">EBITDA</span><span class="v">$40k/rd</span></div>
+        <div class="drow"><span class="k">MULT</span><span class="v">4.5&times;</span></div>
+        <div class="drow"><span class="k">SECTOR</span><span class="v">SOFTWARE</span></div>
+        <div class="dfoot" id="memo-foot">ASKING &middot; $180k CASH</div>
+        <div id="acq-stamp">ACQUIRED &#10003;</div>
+      </div>
+
+      <!-- RAISE · term sheet -->
+      <div class="doc" id="doc-term" onclick="denyDoc(this)">
+        <span class="dtag">RAISE</span>
+        <div class="dhead" style="color:var(--ink-blue)">TERM SHEET — SERIES A</div>
+        <div class="dname">Hollis Ventures LP</div>
+        <div class="drow"><span class="k">CASH IN</span><span class="v">+$800k</span></div>
+        <div class="drow"><span class="k">OWN</span><span class="v">&minus;dilution</span></div>
+        <div class="dfoot">NEW BOSSES ATTACHED</div>
+      </div>
+
+      <!-- LOAN · bank letter -->
+      <div class="doc" id="doc-bank" onclick="denyDoc(this)">
+        <span class="dtag">LOAN</span>
+        <div class="dhead">FIRST MERIDIAN BANK</div>
+        <div class="dname">Credit Committee: APPROVED</div>
+        <div class="drow"><span class="k">CASH</span><span class="v">+$500k</span></div>
+        <div class="drow"><span class="k">DEBT</span><span class="v">+$500k</span></div>
+        <div class="drow"><span class="k">RATE</span><span class="v">~11%</span></div>
+        <div class="seal">SEAL</div>
+        <div class="dfoot">LEVER UP</div>
+      </div>
+
+      <!-- EXIT · buyout offer envelope -->
+      <div class="doc" id="doc-env" onclick="denyDoc(this)">
+        <span class="dtag">EXIT</span>
+        <div class="wax">M</div>
+        <div class="dhead" style="padding-top:14px">STRICTLY CONFIDENTIAL</div>
+        <div class="dname">Buyout Offer Enclosed</div>
+        <div class="drow"><span class="k">ROLLS</span><span class="v">6.0&times;</span></div>
+        <div class="drow"><span class="k">PAPER</span><span class="v">&rarr; CASH</span></div>
+        <div class="dfoot">CASH OUT</div>
+      </div>
+    </div>
+
+    <!-- 8 · the desk edge -->
+    <div id="desk-edge">
+      <div id="reinvest">Reinvest<br>(baseline) &#9656;</div>
+      <div id="reroll">&#9742; CALL THE BROKER<small>REROLL &middot; $15k</small></div>
+      <div id="endturn" class="brass">DAY DONE<small>END TURN &middot; STAMP IT</small></div>
+    </div>
+  </div>
+
+  <!-- THE NAPKIN overlay -->
+  <div class="overlay" id="napkin">
+    <div id="napkin-sheet">
+      <div class="coffee"></div>
+      <h3>— THE NAPKIN &#9998; —</h3>
+      <div class="nline"><span>pay the man</span><span class="nv bad">&minus; $180k cash</span></div>
+      <div class="nline"><span>Nimbus absorbs</span><span class="nv good">+ $40k EBITDA</span></div>
+      <div class="nline"><span>same sector?</span><span class="nv good">YES &#10003; software</span></div>
+      <div class="nline"><span>synergy</span><span class="nv good">+ $8k EBITDA</span></div>
+      <div class="nline"><span>multiple</span><span class="nv">11.0&times; &rarr; 11.0&times; held</span></div>
+      <div class="nnote">their earnings get marked at OUR multiple. same sector = synergy, no drag.</div>
+      <div id="sig-row">
+        <span class="sx">x</span>
+        <svg width="100%" height="34" viewBox="0 0 320 34" preserveAspectRatio="none">
+          <path id="sig-path" d="M14 26 C 26 6, 38 6, 44 22 C 50 34, 58 28, 66 14 C 74 2, 84 24, 100 22 C 130 19, 128 8, 150 16 C 172 24, 196 10, 226 18 C 252 25, 270 12, 302 18"/>
+        </svg>
+      </div>
+      <div class="nactions">
+        <div class="nbtn" id="btn-back" onclick="closeNapkin()">PUT IT BACK</div>
+        <div class="nbtn" id="btn-sign" onclick="signDeal(this)">SIGN THE DEAL &#10002;</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MULTIPLE ARBITRAGE flash -->
+  <div class="overlay" id="arb">
+    <div class="wrap">
+      <div id="arb-title">MULTIPLE ARBITRAGE</div>
+      <div id="arb-sub">$40k of earnings bought at 4.5&times; &middot; re-marked at <b style="color:#e7b6ae">11.0&times;</b></div>
+      <div id="arb-ledger">
+        <div class="lrow"><span>EBITDA</span><span class="lv" id="arb-eb">$310k</span></div>
+        <div class="lrow"><span>MULTIPLE</span><span class="lv">11.0&times; (held)</span></div>
+        <div class="lrow"><span>ENTERPRISE VALUE</span><span class="lv" id="arb-ev">$3.41M</span></div>
+      </div>
+      <div id="arb-headline">+$260,000</div>
+      <div id="arb-headsub">PURE ARBITRAGE &middot; THAT'S ALLOWED?!</div>
+      <div id="btn-frame" class="brass" onclick="dismissArb()">FRAME IT.</div>
+    </div>
+  </div>
+
+  <div id="vignette"></div>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  let played = false;
+
+  /* ---- napkin ---- */
+  function openNapkin() {
+    if (played) return;
+    $('doc-memo').classList.add('sel');
+    $('folder-nimbus').classList.add('target-glow');
+    $('hint').style.display = 'none';
+    $('napkin').classList.add('show');
+  }
+  function closeNapkin() {
+    $('napkin').classList.remove('show');
+    $('doc-memo').classList.remove('sel');
+    $('folder-nimbus').classList.remove('target-glow');
+  }
+  function denyDoc(el) {
+    el.classList.remove('deny'); void el.offsetWidth; el.classList.add('deny');
+  }
+
+  /* ---- sign: signature flourish, then the flash ---- */
+  let signing = false;
+  function signDeal(btn) {
+    if (signing) return;
+    signing = true;
+    btn.textContent = 'SIGNING…';
+    $('sig-path').classList.add('signing');
+    setTimeout(() => {
+      signing = false;
+      closeNapkin();
+      playArb();
+    }, 800);
+  }
+
+  function playArb() {
+    $('arb').classList.add('show');
+    setTimeout(() => countUp('arb-eb', 310, 358, 700, v => '$' + Math.round(v) + 'k'), 350);
+    setTimeout(() => countUp('arb-ev', 3.41, 3.94, 700, v => '$' + v.toFixed(2) + 'M'), 1100);
+    setTimeout(() => {
+      $('arb-headline').classList.add('pop');
+      $('app').classList.add('shake');
+      flyPaper();
+      setTimeout(() => $('app').classList.remove('shake'), 450);
+    }, 1900);
+  }
+
+  /* ---- dismiss: deltas land on the desk objects ---- */
+  function dismissArb() {
+    $('arb').classList.remove('show');
+    if (played) return;
+    played = true;
+    setStat('v-eb', '$358k'); floatDelta('v-eb', '+$48k');
+    setStat('v-cash', '$202k'); floatDelta('v-cash', '−$180k', true);
+    setTimeout(() => { setStat('v-nw', '$1.95M'); floatDelta('v-nw', '+$150k'); }, 250);
+    $('p-eb').textContent = '$358k';
+    $('plays-ct').textContent = '1/3';
+    const memo = $('doc-memo');
+    memo.classList.add('dim');
+    $('memo-foot').textContent = 'FILED · SEE STAMP';
+    $('acq-stamp').classList.add('land');
+  }
+
+  function setStat(id, txt) {
+    const el = $(id);
+    el.textContent = txt;
+    el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick');
+  }
+
+  function floatDelta(anchorId, text, neg) {
+    const a = $(anchorId).getBoundingClientRect();
+    const p = $('phone').getBoundingClientRect();
+    const f = document.createElement('div');
+    f.className = 'float-delta' + (neg ? ' neg' : '');
+    f.textContent = text;
+    f.style.left = (a.left - p.left) + 'px';
+    f.style.top = (a.top - p.top - 10) + 'px';
+    $('phone').appendChild(f);
+    setTimeout(() => f.remove(), 1300);
+  }
+
+  function countUp(id, from, to, ms, fmt) {
+    const el = $(id), t0 = performance.now();
+    el.style.color = '#2e7d44';
+    (function step(t) {
+      const k = Math.min(1, (t - t0) / ms);
+      const ease = 1 - Math.pow(1 - k, 3);
+      el.textContent = fmt(from + (to - from) * ease);
+      if (k < 1) requestAnimationFrame(step);
+    })(t0);
+  }
+
+  /* flying paper scraps instead of sparkles — it's an office */
+  function flyPaper() {
+    const h = $('arb-headline').getBoundingClientRect();
+    const p = $('phone').getBoundingClientRect();
+    const tints = ['#f4ead0', '#e8d4a4', '#fbf7ea'];
+    for (let i = 0; i < 20; i++) {
+      const s = document.createElement('div');
+      s.className = 'paperbit';
+      const ang = Math.random() * Math.PI * 2, d = 70 + Math.random() * 110;
+      s.style.setProperty('--dx', Math.cos(ang) * d + 'px');
+      s.style.setProperty('--dy', (Math.sin(ang) * d + 40) + 'px');
+      s.style.setProperty('--rot', (Math.random() * 540 - 270) + 'deg');
+      s.style.left = (h.left - p.left + h.width / 2) + 'px';
+      s.style.top = (h.top - p.top + h.height / 2) + 'px';
+      s.style.background = tints[i % 3];
+      $('phone').appendChild(s);
+      setTimeout(() => s.remove(), 950);
+    }
+  }
+</script>
+</body>
+</html>

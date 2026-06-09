@@ -1,0 +1,31 @@
+MULTIPLES — third-party asset attribution
+==========================================
+
+The MULTIPLES source code is MIT-licensed (see LICENSE). The bundled assets
+below are third-party works under their own licenses.
+
+
+FONTS (SIL Open Font License 1.1)
+---------------------------------
+
+The three bundled typefaces (app/assets/fonts/) are licensed under the SIL
+Open Font License, Version 1.1 (https://openfontlicense.org). The OFL permits
+bundling and redistribution within an application; the fonts themselves remain
+under the OFL and are not relicensed by this project's MIT license.
+
+  - VT323          — Copyright The VT323 Project Authors.
+                     (Peter Hull). https://fonts.google.com/specimen/VT323
+  - Silkscreen     — Copyright Jason Kottke.
+                     https://fonts.google.com/specimen/Silkscreen
+  - IBM Plex Mono  — Copyright IBM Corp., with Reserved Font Name "Plex".
+                     https://github.com/IBM/plex
+
+The full OFL 1.1 text accompanies each typeface in its upstream repository.
+
+
+AUDIO
+-----
+
+The bundled audio (app/assets/audio/ — 5 looping background tracks and 13
+one-shot sound effects) is original work created for MULTIPLES and is covered
+by the project's own terms, not a third-party license.

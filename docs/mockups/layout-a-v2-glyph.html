@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>MULTIPLES — Layout A v2 "THE TERMINAL" (glyph)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@400;500;600;700&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-0: #020409;          /* room around the terminal */
+    --bg-1: #04080f;          /* screen glass, deep blue-black */
+    --bg-2: #0a1220;          /* panel raised */
+    --blu: #54b9ff;           /* phosphor blue */
+    --blu-hi: #8ee2ff;
+    --blu-dim: #3d5570;       /* desaturated slate labels */
+    --blu-faint: #25364a;
+    --blu-ghost: rgba(84,185,255,.34);
+    --grn: #4dff8a;           /* gains */
+    --grn-dim: #1f7a44;
+    --red: #ff5566;           /* losses */
+    --red-dim: #7a2230;
+    --line: #122031;          /* hairline dividers */
+    --walnut-1: #4a2e1c;      /* bezel wood */
+    --walnut-2: #2d1b10;
+    --brass: #c9a86a;
+    --brass-dk: #8a6f3f;
+    --glow: 0 0 6px rgba(84,185,255,.55), 0 0 18px rgba(84,185,255,.16);
+    --glow-grn: 0 0 6px rgba(77,255,138,.55), 0 0 16px rgba(77,255,138,.22);
+    --glow-red: 0 0 6px rgba(255,85,102,.5);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; background: var(--bg-0); }
+  body {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--blu);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+
+  /* ============ PHONE FRAME = a desk terminal ============ */
+  #phone {
+    position: relative;
+    width: 412px; height: 860px;
+    max-height: 100vh;
+    border-radius: 22px;
+    overflow: hidden;
+    background:
+      repeating-linear-gradient(94deg, var(--walnut-1) 0 7px, var(--walnut-2) 7px 11px, #3a2415 11px 19px);
+    box-shadow: 0 0 0 5px #000, 0 0 70px rgba(0,0,0,.85), inset 0 0 30px rgba(0,0,0,.6);
+    padding: 30px 9px 9px;
+  }
+  /* brass nameplate, shortened */
+  #nameplate {
+    position: absolute; top: 5px; left: 50%; transform: translateX(-50%);
+    z-index: 3;
+    font-family: 'Silkscreen'; font-size: 9px; letter-spacing: 2px;
+    color: #2a1d08;
+    background: linear-gradient(180deg, #e8cd8e, var(--brass) 55%, var(--brass-dk));
+    border: 1px solid #5e4a24; border-radius: 3px;
+    padding: 3px 14px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.45);
+    white-space: nowrap;
+  }
+  #nameplate i { font-style: normal; opacity: .55; padding: 0 4px; }
+
+  /* the CRT glass */
+  #screen {
+    position: relative; width: 100%; height: 100%;
+    border-radius: 12px; overflow: hidden;
+    background:
+      radial-gradient(ellipse 130% 100% at 50% 0%, #0a1322 0%, var(--bg-1) 50%, #02050b 100%);
+    box-shadow: inset 0 0 0 2px #000, inset 0 0 42px rgba(0,0,0,.75);
+  }
+  /* scanlines + curvature vignette + flicker */
+  #crt {
+    position: absolute; inset: 0; pointer-events: none; z-index: 90;
+    background:
+      repeating-linear-gradient(0deg, rgba(0,0,0,.22) 0px, rgba(0,0,0,.22) 1px, transparent 2px, transparent 3px),
+      radial-gradient(ellipse 95% 88% at 50% 45%, transparent 58%, rgba(0,0,0,.5) 100%);
+  }
+  #crt::after {
+    content: ""; position: absolute; inset: 0;
+    background: rgba(120,200,255,.022);
+    animation: flick 4.2s steps(1) infinite;
+  }
+  @keyframes flick {
+    0%, 100% { opacity: 1; } 7% { opacity: 0; } 9% { opacity: 1; }
+    44% { opacity: 0; } 45% { opacity: 1; } 81% { opacity: .4; } 82% { opacity: 1; }
+  }
+
+  /* screen-wide gain tint — the signature green surge */
+  #tint {
+    position: absolute; inset: 0; pointer-events: none; z-index: 85;
+    background: transparent;
+    transition: background .25s ease, box-shadow .25s ease;
+  }
+  #tint.surge {
+    background: rgba(77,255,138,.07);
+    box-shadow: inset 0 0 80px rgba(77,255,138,.22);
+  }
+
+  #app { position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; padding: 8px 10px 8px; }
+  #app.shake { animation: shake .42s linear; }
+  @keyframes shake {
+    0%,100% { transform: translate(0,0); }
+    15% { transform: translate(-5px,3px); }
+    30% { transform: translate(5px,-3px); }
+    45% { transform: translate(-4px,-2px); }
+    60% { transform: translate(4px,2px); }
+    80% { transform: translate(-2px,1px); }
+  }
+
+  .num  { font-family: 'VT323', monospace; }
+  .hdr  { font-family: 'Silkscreen'; }
+  .dim  { color: var(--blu-dim); }
+  .grn  { color: var(--grn); text-shadow: var(--glow-grn); }
+  .red  { color: var(--red); text-shadow: var(--glow-red); }
+
+  /* ============ status line — glyphs only ============ */
+  #statline {
+    display: flex; align-items: center;
+    font-size: 13px; letter-spacing: .5px;
+    color: var(--blu); text-shadow: var(--glow);
+    border-bottom: 1px solid var(--line);
+    padding: 1px 2px 5px;
+  }
+  #statline .seg { padding: 0 8px; border-right: 1px solid var(--line); }
+  #statline .seg:first-child { padding-left: 0; }
+  #statline .seg:last-child { border-right: none; margin-left: auto; color: var(--blu-dim); text-shadow: none; }
+  #statline .g { color: var(--blu-dim); text-shadow: none; padding-right: 3px; }
+  #statline b { font-weight: 700; }
+  #cursor { display: inline-block; width: 7px; height: 13px; background: var(--blu); vertical-align: -2px;
+    margin-left: 4px; animation: blink 1.05s steps(1) infinite; box-shadow: var(--glow); }
+  @keyframes blink { 0%,60% { opacity: 1; } 61%,100% { opacity: 0; } }
+
+  /* ============ QUOTE BOARD ============ */
+  #board { padding: 7px 0 6px; border-bottom: 1px solid var(--line); }
+
+  /* row 1: CASH solid vs NET WORTH ghost */
+  #money-row { display: flex; gap: 8px; margin-bottom: 7px; }
+  .qbox { flex: 1; padding: 5px 9px 6px; position: relative; }
+  .qbox .lbl { font-family: 'Silkscreen'; font-size: 9px; letter-spacing: 1.5px; }
+  .qbox .val { font-size: 38px; line-height: .95; margin-top: 2px; }
+  #q-cash {
+    border: 2px solid var(--blu);
+    background: rgba(84,185,255,.07);
+    box-shadow: var(--glow), inset 0 0 14px rgba(84,185,255,.07);
+    color: var(--blu-hi);
+  }
+  #q-cash .val { text-shadow: var(--glow); }
+  #q-cash .lbl { color: var(--blu); }
+  #q-cash .sub { position: absolute; top: 4px; right: 7px; font-size: 10px;
+    color: var(--blu); }
+  #q-nw {
+    border: 1px dashed var(--blu-ghost);
+    background: transparent;
+    color: var(--blu-ghost);
+    transition: border-color .3s, color .3s;
+  }
+  #q-nw .lbl { color: var(--blu-ghost); }
+  #q-nw .val { text-shadow: none; opacity: .9; transition: opacity .3s; }
+  #q-nw .sub {
+    position: absolute; top: 4px; right: 7px; font-size: 9px; letter-spacing: 1px;
+    color: var(--blu-ghost); border: 1px dashed var(--blu-ghost); padding: 0 4px; border-radius: 2px;
+  }
+  /* surge state: NW box goes green while net worth climbs */
+  #q-nw.surge { border-color: var(--grn); color: var(--grn); }
+  #q-nw.surge .lbl, #q-nw.surge .sub { color: var(--grn); border-color: var(--grn); }
+  #q-nw.surge .val { opacity: 1; text-shadow: var(--glow-grn); }
+
+  /* row 2: the four levers — glyph chip + BIG number + change chip, no words */
+  #levers { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px; }
+  .lever { text-align: center; padding: 3px 2px 4px; border: 1px solid var(--line); background: rgba(84,185,255,.025); }
+  .lever .lg {
+    font-size: 12px; line-height: 1; color: var(--blu-dim);
+    display: block; margin-bottom: 2px;
+  }
+  .lever .lv { font-size: 26px; line-height: 1; color: var(--blu); text-shadow: var(--glow); display: block; }
+  .lever .lc { font-size: 12px; line-height: 1.2; display: block; margin-top: 2px; }
+  .lc.up { color: var(--grn); text-shadow: var(--glow-grn); }
+  .lc.dn { color: var(--red); text-shadow: var(--glow-red); }
+  .lc.fl { color: var(--blu-faint); }
+  .lv.tick { animation: tickpop .5s ease; }
+  @keyframes tickpop { 0% { transform: scale(1); } 35% { transform: scale(1.3); filter: brightness(1.8); } 100% { transform: scale(1); } }
+
+  /* ============ METERS (LED segment style, glyph captions) ============ */
+  #meters { display: flex; gap: 10px; padding: 7px 0 6px; border-bottom: 1px solid var(--line); }
+  .meter { flex: 1; }
+  .meter .mlbl { display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 12px; color: var(--blu-dim); margin-bottom: 3px; }
+  .meter .mlbl b { color: var(--blu); font-weight: 400; font-family: 'VT323'; font-size: 16px; text-shadow: var(--glow); }
+  .meter .mlbl .ok { color: var(--grn); text-shadow: var(--glow-grn); }
+  .segbar { display: flex; gap: 2px; height: 10px; }
+  .segbar i { flex: 1; background: #0c1626; border-radius: 1px; }
+  .segbar i.on  { background: var(--grn); box-shadow: 0 0 5px rgba(77,255,138,.6); }
+  .segbar i.on.blu { background: var(--blu); box-shadow: 0 0 5px rgba(84,185,255,.6); }
+  .segbar i.on.cold { background: #3a7bbf; box-shadow: 0 0 5px rgba(58,123,191,.5); }
+  .segbar i.on.hot { background: var(--red); box-shadow: 0 0 5px rgba(255,85,102,.6); }
+  .segbar i.mk { position: relative; }
+  .segbar i.mk::after { content: "▼"; position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+    font-size: 8px; color: var(--blu-hi); text-shadow: var(--glow); }
+  .meter .mnum { display: flex; justify-content: space-between; font-size: 10px; color: var(--blu-faint); margin-top: 2px; letter-spacing: .5px; }
+
+  /* ============ news tape — punchy fragments ============ */
+  #tape-wrap {
+    height: 21px; overflow: hidden; position: relative;
+    border-bottom: 1px solid var(--line);
+    background: rgba(0,0,0,.3);
+  }
+  #tape {
+    position: absolute; white-space: nowrap;
+    font-size: 13px; line-height: 21px; color: var(--blu-dim);
+    animation: tape 14s linear infinite;
+  }
+  #tape b { color: var(--blu); font-weight: 400; text-shadow: var(--glow); }
+  @keyframes tape { from { transform: translateX(394px); } to { transform: translateX(-100%); } }
+
+  /* ============ HOLDINGS ============ */
+  .secthead {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-family: 'Silkscreen'; font-size: 9px; letter-spacing: 2px;
+    color: var(--blu-dim); padding: 6px 2px 3px;
+  }
+  .secthead .r { color: var(--blu); text-shadow: var(--glow); }
+  #holdings { border: 1px solid var(--line); background: rgba(84,185,255,.025); }
+  .holding {
+    display: flex; align-items: baseline; gap: 9px;
+    font-size: 13px; padding: 6px 9px;
+    transition: box-shadow .2s;
+  }
+  .holding .hname { color: var(--blu-hi); text-shadow: var(--glow); font-weight: 600; }
+  .holding .htag { font-size: 9px; font-family: 'Silkscreen'; color: #04080f; background: var(--blu-dim); padding: 0 4px; border-radius: 2px; letter-spacing: 1px; }
+  .holding .hstat { color: var(--blu-dim); font-family: 'VT323'; font-size: 17px; }
+  .holding .hstat b { color: var(--blu); font-weight: 400; }
+  .holding .hstat:last-child { margin-left: auto; }
+  .holding.target-glow { animation: tglow 1s ease-in-out infinite; }
+  @keyframes tglow {
+    0%,100% { box-shadow: inset 0 0 0 1px rgba(84,185,255,0); }
+    50% { box-shadow: inset 0 0 0 1px var(--blu), 0 0 14px rgba(84,185,255,.45); }
+  }
+
+  /* ============ ORDER BLOTTER (the hand) — glyph badge + numbers + price ============ */
+  #blotter { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 5px; padding-top: 2px; }
+  .ticket {
+    display: grid; grid-template-columns: 64px 1fr 84px;
+    align-items: center; gap: 6px;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--blu-dim);
+    background: var(--bg-2);
+    padding: 7px 9px 8px;
+    cursor: pointer; user-select: none;
+    transition: transform .12s, box-shadow .12s, border-color .12s, opacity .3s, filter .3s;
+  }
+  .ticket:hover, .ticket.sel {
+    transform: translateX(3px);
+    border-color: var(--blu); border-left-color: var(--blu-hi);
+    box-shadow: 0 0 14px rgba(84,185,255,.22), inset 0 0 10px rgba(84,185,255,.05);
+  }
+  .ticket .tbadge {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    font-family: 'VT323'; font-size: 22px; line-height: 1;
+    padding: 4px 0 5px; border-radius: 2px; color: #04080f;
+  }
+  .ticket .tbadge small { font-family: 'Silkscreen'; font-size: 8px; letter-spacing: 1px; }
+  .ticket.t-addon { border-left-color: var(--grn); }
+  .ticket.t-addon .tbadge { background: var(--grn); box-shadow: 0 0 8px rgba(77,255,138,.35); }
+  .ticket.t-raise { border-left-color: #b48cff; }
+  .ticket.t-raise .tbadge { background: #b48cff; }
+  .ticket.t-loan { border-left-color: var(--blu); }
+  .ticket.t-loan .tbadge { background: var(--blu); }
+  .ticket.t-exit { border-left-color: var(--red); }
+  .ticket.t-exit .tbadge { background: var(--red); color: #fff; }
+  .ticket .tmid { font-family: 'VT323'; font-size: 21px; color: var(--blu); text-shadow: var(--glow); line-height: 1; }
+  .ticket .tmid .sep { color: var(--blu-faint); text-shadow: none; padding: 0 2px; font-size: 17px; }
+  .ticket .tpx { text-align: right; }
+  .ticket .tpx .pxv { font-family: 'VT323'; font-size: 22px; color: var(--blu-hi); text-shadow: var(--glow); line-height: 1; }
+  .ticket .tpx .pxl { font-size: 8px; font-family: 'Silkscreen'; letter-spacing: 1px; color: var(--blu-dim); margin-top: 2px; }
+  .ticket.filled { opacity: .38; filter: saturate(.4); pointer-events: none; transform: none; }
+  .ticket.filled .pxv { color: var(--grn); text-shadow: var(--glow-grn); font-size: 16px; letter-spacing: 1px; }
+
+  /* ============ function key bar — icon chips ============ */
+  #fkeys { display: flex; gap: 7px; padding: 8px 0 0; }
+  .fkey {
+    cursor: pointer; user-select: none; text-align: center;
+    font-family: 'Silkscreen'; font-size: 10px; letter-spacing: .5px;
+    color: var(--blu);
+    background: linear-gradient(180deg, #16243a, #0d1726 60%, #060d18);
+    border: 1px solid #000; border-radius: 5px;
+    box-shadow: 0 4px 0 #000, inset 0 1px 0 rgba(120,200,255,.16);
+    padding: 10px 4px 11px;
+    transition: transform .06s, box-shadow .06s;
+  }
+  .fkey:active { transform: translateY(3px); box-shadow: 0 1px 0 #000; }
+  .fkey .ic { font-family: 'VT323'; font-size: 16px; line-height: 1; vertical-align: -2px; padding-right: 4px; }
+  #fkeys .fkey { flex: 2; }
+  #fkeys .fkey.chip { flex: 1; color: var(--blu-dim); }
+  #fkeys .fkey.chip .ic { font-size: 19px; color: var(--blu); padding: 0; }
+  .fkey.primary {
+    background: linear-gradient(180deg, #0a3b66, #062845 60%, #03182b);
+    color: var(--blu-hi); text-shadow: var(--glow);
+    border-color: #021120;
+    animation: keypulse 1.6s ease-in-out infinite;
+  }
+  @keyframes keypulse { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.35); } }
+
+  #hint {
+    position: absolute; bottom: 262px; left: 0; right: 0; z-index: 8; text-align: center;
+    font-size: 11px; font-family: 'Silkscreen'; letter-spacing: 1px;
+    color: var(--grn); text-shadow: var(--glow-grn); pointer-events: none;
+    animation: keypulse 1.4s ease-in-out infinite;
+  }
+
+  /* ============ overlays ============ */
+  .overlay {
+    position: absolute; inset: 0; z-index: 50; display: none;
+    background: rgba(2,5,10,.88);
+    align-items: flex-end; justify-content: center;
+  }
+  .overlay.show { display: flex; }
+
+  /* napkin = order confirm panel, labels cut to 1-2 words */
+  #napkin .panel {
+    width: 100%; margin: 0 10px 12px;
+    background: var(--bg-1);
+    border: 2px solid var(--blu); border-radius: 4px;
+    box-shadow: var(--glow), inset 0 0 24px rgba(84,185,255,.05);
+    padding: 12px 14px 14px;
+    animation: panelup .25s cubic-bezier(.34,1.3,.64,1);
+  }
+  @keyframes panelup { from { transform: translateY(40%); opacity: .3; } to { transform: translateY(0); opacity: 1; } }
+  #napkin h3 {
+    font-family: 'Silkscreen'; font-size: 10px; letter-spacing: 2px; font-weight: 400;
+    color: var(--blu); text-shadow: var(--glow); text-align: center;
+    border-bottom: 1px solid var(--line); padding-bottom: 8px; margin-bottom: 4px;
+  }
+  .orow { display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 13px; padding: 6px 2px; border-bottom: 1px dotted #0e1828; }
+  .orow .k { color: var(--blu-dim); }
+  .orow .k::before { content: "> "; color: var(--blu-faint); }
+  .orow .v { font-family: 'VT323'; font-size: 20px; color: var(--blu); text-shadow: var(--glow); }
+  .orow .v.good { color: var(--grn); text-shadow: var(--glow-grn); }
+  .orow .v.bad  { color: var(--red); text-shadow: var(--glow-red); }
+  .onote { font-size: 12px; color: var(--blu-faint); padding: 9px 2px 11px; font-family: 'VT323'; letter-spacing: .5px; }
+  #napkin .actions { display: flex; gap: 8px; }
+  #napkin .actions .fkey { flex: 1; padding: 11px 2px; font-size: 10px; }
+  #napkin .actions .fkey.exec {
+    background: linear-gradient(180deg, #0d4d2c, #07301c 60%, #041d11);
+    color: var(--grn); text-shadow: var(--glow-grn); border-color: #021207;
+    animation: keypulse 1.2s ease-in-out infinite;
+  }
+
+  /* ============ arbitrage flash ============ */
+  #arb { align-items: center; background: rgba(2,5,10,.96); }
+  #arb .wrap { text-align: center; width: 100%; padding: 0 20px; }
+  #arb-banner {
+    font-family: 'Silkscreen'; font-size: 22px; letter-spacing: 2px; line-height: 1.25;
+    color: var(--blu-hi); text-shadow: var(--glow), 0 0 40px rgba(84,185,255,.4);
+    animation: bannerin .5s cubic-bezier(.34,1.7,.64,1);
+  }
+  @keyframes bannerin { 0% { transform: scale(.3); opacity: 0; } 70% { transform: scale(1.12); } 100% { transform: scale(1); } }
+  #arb-sub { font-family: 'VT323'; font-size: 20px; color: var(--blu-dim); margin: 8px 0 14px; }
+  #arb-sub b { color: var(--blu); font-weight: 400; text-shadow: var(--glow); }
+  #arb-math {
+    display: inline-block; text-align: left; margin-bottom: 12px; min-width: 250px;
+    border: 1px solid var(--line); background: rgba(84,185,255,.03); padding: 8px 14px;
+  }
+  #arb-math .orow { gap: 30px; }
+  #arb-math .orow:last-child { border-bottom: none; }
+  #arb-math .orow .v { font-size: 24px; }
+  #arb-headline {
+    font-family: 'VT323'; font-size: 64px; line-height: 1;
+    color: var(--grn); text-shadow: var(--glow-grn), 0 0 50px rgba(77,255,138,.4);
+    margin: 10px 0 2px; opacity: 0;
+  }
+  #arb-headline.pop { opacity: 1; animation: bigpop .55s cubic-bezier(.34,2,.64,1); }
+  @keyframes bigpop { 0% { transform: scale(.3); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
+  #arb-headsub { font-family: 'Silkscreen'; font-size: 10px; letter-spacing: 2px; color: var(--grn);
+    text-shadow: var(--glow-grn); opacity: .85; margin-bottom: 22px; }
+  #arb .fkey { max-width: 200px; margin: 0 auto; font-size: 11px; padding: 12px 20px; }
+
+  /* floating deltas + sparks */
+  .float-delta {
+    position: absolute; z-index: 60; font-family: 'VT323'; font-size: 24px; pointer-events: none;
+    color: var(--grn); text-shadow: var(--glow-grn);
+    animation: floatup 1.2s ease-out forwards;
+  }
+  .float-delta.neg { color: var(--red); text-shadow: var(--glow-red); }
+  @keyframes floatup { 0% { opacity: 0; transform: translateY(6px); } 15% { opacity: 1; } 100% { opacity: 0; transform: translateY(-32px); } }
+  .spark { position: absolute; z-index: 55; width: 6px; height: 6px; pointer-events: none;
+    animation: spark .8s ease-out forwards; }
+  @keyframes spark { 0% { opacity: 1; transform: translate(0,0) scale(1); } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(.2); } }
+</style>
+</head>
+<body>
+<div id="phone">
+  <div id="nameplate">MULTIPLES&nbsp;MK·I <i>·</i> №&nbsp;4F2A</div>
+  <div id="screen">
+    <div id="app">
+
+      <!-- STATUS LINE : tier · round/deadline · tier bar · seed -->
+      <div id="statline">
+        <span class="seg"><b>T2</b></span>
+        <span class="seg num"><span class="g">◷</span>3/8</span>
+        <span class="seg num"><span class="g">⚑</span>$10M</span>
+        <span class="seg num">#4F2A<span id="cursor"></span></span>
+      </div>
+
+      <!-- QUOTE BOARD : canonical order CASH, NET WORTH, then E · × · ⛓ · % -->
+      <div id="board">
+        <div id="money-row">
+          <div class="qbox" id="q-cash">
+            <span class="sub">●</span>
+            <div class="lbl">$ CASH</div>
+            <div class="val num" id="v-cash">$382k</div>
+          </div>
+          <div class="qbox" id="q-nw">
+            <span class="sub">[PAPER]</span>
+            <div class="lbl">◇ NW</div>
+            <div class="val num" id="v-nw">$1.80M</div>
+          </div>
+        </div>
+        <div id="levers">
+          <div class="lever">
+            <span class="lg">⚙</span>
+            <span class="lv num" id="v-eb">$310k</span>
+            <span class="lc up num" id="c-eb">▲22k</span>
+          </div>
+          <div class="lever">
+            <span class="lg">×</span>
+            <span class="lv num" id="v-mu">11.0</span>
+            <span class="lc up num" id="c-mu">▲0.4</span>
+          </div>
+          <div class="lever">
+            <span class="lg">⛓</span>
+            <span class="lv num" id="v-db">$1.2M</span>
+            <span class="lc fl num" id="c-db">—</span>
+          </div>
+          <div class="lever">
+            <span class="lg">%</span>
+            <span class="lv num" id="v-ow">64</span>
+            <span class="lc dn num" id="c-ow">▼8</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- METERS : runway ⏳ 48/96k ✓ · market ❄|—|🔥 needle -->
+      <div id="meters">
+        <div class="meter">
+          <div class="mlbl"><span>⏳</span><b id="runway-st">48/96k <span class="ok">✓</span></b></div>
+          <div class="segbar" id="runway-bar">
+            <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i>
+            <i class="on"></i><i class="on blu"></i><i class="on blu"></i><i></i><i></i>
+          </div>
+          <div class="mnum"><span>⛓ due</span><span>$ proj</span></div>
+        </div>
+        <div class="meter">
+          <div class="mlbl"><span>♨</span><b>—</b></div>
+          <div class="segbar">
+            <i class="on cold"></i><i class="on cold"></i>
+            <i class="on blu"></i><i class="on blu mk"></i><i class="on blu"></i><i class="on blu"></i>
+            <i class="on hot" style="opacity:.25"></i><i class="on hot" style="opacity:.25"></i>
+          </div>
+          <div class="mnum"><span>❄ COLD</span><span>HOT 🔥</span></div>
+        </div>
+      </div>
+
+      <!-- NEWS TAPE : 2-4 word fragments -->
+      <div id="tape-wrap"><div id="tape">*** <b>SW BUBBLE ▲</b> ··· MULTIPLES DRIFTING ▲ ··· <b>CHEAP ⛓ ENDING</b> ··· RATE ~11% ··· SELL &gt; BUY ··· *** </div></div>
+
+      <!-- HOLDINGS -->
+      <div class="secthead"><span>◈ HOLDINGS</span><span class="r num">1/2</span></div>
+      <div id="holdings">
+        <div class="holding" id="platform">
+          <span class="hname">NIMBUS</span>
+          <span class="htag">SW</span>
+          <span class="hstat">⚙ <b id="p-eb">$310k</b></span>
+          <span class="hstat"><b>11.0×</b></span>
+          <span class="hstat">% <b>64</b></span>
+        </div>
+      </div>
+
+      <!-- ORDER BLOTTER : glyph badge + ≤2 numbers + price -->
+      <div class="secthead"><span>⌗ BLOTTER</span><span class="r num" id="plays-ct">⚡ 2/3</span></div>
+      <div id="blotter">
+        <div class="ticket t-addon" id="tk-addon" onclick="openNapkin()">
+          <span class="tbadge">⊕ <small>SW</small></span>
+          <span class="tmid">40k <span class="sep">@</span> 4.5×</span>
+          <span class="tpx"><div class="pxv">$180k</div><div class="pxl">BUY</div></span>
+        </div>
+        <div class="ticket t-raise">
+          <span class="tbadge">△ <small>EQ</small></span>
+          <span class="tmid">+$800k <span class="sep">·</span> −%</span>
+          <span class="tpx"><div class="pxv">DILUTE</div><div class="pxl">RAISE</div></span>
+        </div>
+        <div class="ticket t-loan">
+          <span class="tbadge">⛓ <small>DBT</small></span>
+          <span class="tmid">+$500k <span class="sep">@</span> 11%</span>
+          <span class="tpx"><div class="pxv">LEVER</div><div class="pxl">LOAN</div></span>
+        </div>
+        <div class="ticket t-exit">
+          <span class="tbadge">⏏ <small>BID</small></span>
+          <span class="tmid">6.0× <span class="sep">⟶</span> $</span>
+          <span class="tpx"><div class="pxv">SELL</div><div class="pxl">EXIT</div></span>
+        </div>
+      </div>
+
+      <!-- FUNCTION KEYS : icon + one word max -->
+      <div id="fkeys">
+        <div class="fkey chip"><span class="ic">⟳</span></div>
+        <div class="fkey"><span class="ic">↻</span>$15k</div>
+        <div class="fkey primary"><span class="ic">▶</span>END</div>
+      </div>
+
+      <div id="hint">▲ TAP ⊕</div>
+    </div>
+
+    <!-- NAPKIN = ORDER CONFIRM, labels trimmed to 1-2 words -->
+    <div class="overlay" id="napkin">
+      <div class="panel">
+        <h3>✎ CONFIRM · ⊕ SW → NIMBUS</h3>
+        <div class="orow"><span class="k">PAY</span><span class="v bad">−$180k</span></div>
+        <div class="orow"><span class="k">⚙ EBITDA</span><span class="v good">+$40k</span></div>
+        <div class="orow"><span class="k">SECTOR</span><span class="v good">SW = SW ✓</span></div>
+        <div class="orow"><span class="k">SYNERGY</span><span class="v good">+$8k</span></div>
+        <div class="orow"><span class="k">× MULT</span><span class="v">11.0 ⟶ 11.0 ⊜</span></div>
+        <div class="onote">// same sector ⟹ synergy + × held</div>
+        <div class="actions">
+          <div class="fkey" onclick="closeNapkin()"><span class="ic">✕</span>ESC</div>
+          <div class="fkey exec" onclick="playDeal()"><span class="ic">▶</span>EXECUTE</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ARBITRAGE FLASH -->
+    <div class="overlay" id="arb">
+      <div class="wrap">
+        <div id="arb-banner">*** MULTIPLE<br>ARBITRAGE ***</div>
+        <div id="arb-sub">$48k <b>@ 4.5×</b> ⟶ <b>11.0×</b></div>
+        <div id="arb-math">
+          <div class="orow"><span class="k">⚙</span><span class="v" id="arb-eb">$310k</span></div>
+          <div class="orow"><span class="k">×</span><span class="v">11.0 ⊜</span></div>
+          <div class="orow"><span class="k">EV</span><span class="v" id="arb-ev">$3.41M</span></div>
+        </div>
+        <div id="arb-headline">+$260,000</div>
+        <div id="arb-headsub">THAT'S ALLOWED?!</div>
+        <div class="fkey exec" onclick="dismissArb()" style="background:linear-gradient(180deg,#0d4d2c,#07301c 60%,#041d11);color:var(--grn);text-shadow:var(--glow-grn)"><span class="ic">✓</span>BOOK</div>
+      </div>
+    </div>
+
+    <div id="tint"></div>
+    <div id="crt"></div>
+  </div>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  let played = false;
+
+  function openNapkin() {
+    if (played) return;
+    $('tk-addon').classList.add('sel');
+    $('platform').classList.add('target-glow');
+    $('hint').style.display = 'none';
+    $('napkin').classList.add('show');
+  }
+  function closeNapkin() {
+    $('napkin').classList.remove('show');
+    $('tk-addon').classList.remove('sel');
+    $('platform').classList.remove('target-glow');
+  }
+
+  function playDeal() {
+    $('napkin').classList.remove('show');
+    $('tk-addon').classList.remove('sel');
+    $('platform').classList.remove('target-glow');
+    $('arb').classList.add('show');
+    // sequence: count EBITDA up, then EV, then headline pop + shake + burst
+    setTimeout(() => countUp('arb-eb', 310, 358, 700, v => '$' + Math.round(v) + 'k'), 350);
+    setTimeout(() => countUp('arb-ev', 3.41, 3.94, 700, v => '$' + v.toFixed(2) + 'M'), 1100);
+    setTimeout(() => {
+      $('arb-headline').classList.add('pop');
+      $('app').classList.add('shake');
+      vibe(80);
+      burstSparks();
+      setTimeout(() => $('app').classList.remove('shake'), 450);
+    }, 1900);
+  }
+
+  function dismissArb() {
+    $('arb').classList.remove('show');
+    if (played) return;
+    played = true;
+    // apply deltas to the quote board with ticks + floaters
+    setQuote('v-eb', '$358k'); setChg('c-eb', '▲48k', 'up'); floatDelta('v-eb', '+$48k');
+    setQuote('v-cash', '$202k'); floatDelta('v-cash', '−$180k', true);
+    // THE SIGNATURE MOMENT: net worth climbs -> blue goes GREEN, screen tints + vibrates
+    setTimeout(() => nwSurge(1.80, 1.95), 280);
+    $('p-eb').textContent = '$358k';
+    $('plays-ct').textContent = '⚡ 1/3';
+    const t = $('tk-addon');
+    t.classList.add('filled');
+    t.querySelector('.pxv').textContent = 'FILLED ✓';
+    t.querySelector('.pxl').textContent = '';
+  }
+
+  /* net worth surge: green count-up + screen-wide tint + shake + vibration, then settle to blue */
+  function nwSurge(from, to) {
+    const box = $('q-nw'), tint = $('tint'), app = $('app');
+    box.classList.add('surge');
+    tint.classList.add('surge');
+    app.classList.add('shake');
+    vibe(80);
+    floatDelta('v-nw', '+$150k');
+    countUp('v-nw', from, to, 900, v => '$' + v.toFixed(2) + 'M', true);
+    setTimeout(() => app.classList.remove('shake'), 450);
+    setTimeout(() => {                 // settle back to ghost blue
+      box.classList.remove('surge');
+      tint.classList.remove('surge');
+      const el = $('v-nw');
+      el.style.color = ''; el.style.textShadow = '';
+      el.textContent = '$1.95M';
+    }, 1700);
+  }
+
+  function vibe(ms) { if (navigator.vibrate) navigator.vibrate(ms); }
+
+  function setQuote(id, txt) {
+    const el = $(id);
+    el.textContent = txt;
+    el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick');
+  }
+  function setChg(id, txt, cls) {
+    const el = $(id);
+    el.textContent = txt;
+    el.className = 'lc ' + cls + ' num';
+  }
+
+  function floatDelta(anchorId, text, neg) {
+    const a = $(anchorId).getBoundingClientRect();
+    const p = $('phone').getBoundingClientRect();
+    const f = document.createElement('div');
+    f.className = 'float-delta' + (neg ? ' neg' : '');
+    f.textContent = text;
+    f.style.left = (a.left - p.left) + 'px';
+    f.style.top = (a.top - p.top - 10) + 'px';
+    $('phone').appendChild(f);
+    setTimeout(() => f.remove(), 1300);
+  }
+
+  function countUp(id, from, to, ms, fmt, keepGreen) {
+    const el = $(id), t0 = performance.now();
+    el.style.color = 'var(--grn)';
+    el.style.textShadow = 'var(--glow-grn)';
+    (function step(t) {
+      const k = Math.min(1, (t - t0) / ms);
+      const ease = 1 - Math.pow(1 - k, 3);
+      el.textContent = fmt(from + (to - from) * ease);
+      if (k < 1) requestAnimationFrame(step);
+    })(t0);
+  }
+
+  function burstSparks() {
+    const h = $('arb-headline').getBoundingClientRect();
+    const p = $('phone').getBoundingClientRect();
+    const cols = ['#54b9ff', '#4dff8a', '#8ee2ff'];
+    for (let i = 0; i < 20; i++) {
+      const s = document.createElement('div');
+      s.className = 'spark';
+      const ang = Math.random() * Math.PI * 2, d = 60 + Math.random() * 95;
+      s.style.setProperty('--dx', Math.cos(ang) * d + 'px');
+      s.style.setProperty('--dy', Math.sin(ang) * d + 'px');
+      s.style.left = (h.left - p.left + h.width / 2) + 'px';
+      s.style.top = (h.top - p.top + h.height / 2) + 'px';
+      s.style.background = cols[i % 3];
+      s.style.boxShadow = '0 0 6px ' + cols[i % 3];
+      $('phone').appendChild(s);
+      setTimeout(() => s.remove(), 850);
+    }
+  }
+</script>
+</body>
+</html>

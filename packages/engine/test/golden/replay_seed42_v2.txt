@@ -1,0 +1,29 @@
+# Golden replay snapshot v2 — MULTIPLES engine (Phase 3 round 1: OPERATE).
+# (seed 42, the scripted action+OPERATE sequence in
+#  test/golden_replay_test.dart) -> this exact end state, one path=value
+# per line, sorted. Supersedes replay_seed42_v1.txt (RETIRED at
+# engineSchemaVersion 2 — the OPERATE layer's first real RNG draws moved
+# the stream; docs/03 §6).
+# ANY change to this file is STREAM-BREAKING: never edit it in place.
+# Version a new file (v3), point the test at it, and bump
+# engineSchemaVersion so in-progress runs are abandoned, not mis-replayed.
+actionLog.length=3
+cash=8871900
+market.liveRateBp=1039
+market.roundsInState=2
+market.stateDurationRounds=2
+market.temp=1
+phase=1
+playsRemaining=4
+rerollsUsed=0
+rng.cursor=19
+rngCursor=19
+round=1
+schemaVersion=2
+tier=4
+venture.v1.ebitda=564480
+venture.v1.multiple=6331
+venture.v1.netDebt=1000000
+venture.v1.own=10000
+venture.v1.passive=1
+venture.v1.roundsNeglected=2

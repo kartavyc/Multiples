@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 7,
+  "reputation": 184200,
+  "metaLevel": 1,
+  "furthestTierReached": 3,
+  "unlockedCards": ["VEN_SW_GARAGE", "ADD_SW_PLUGIN"],
+  "unlockedSectors": ["SOFTWARE", "SERVICES", "RETAIL", "INDUSTRIAL"],
+  "unlockedBackgrounds": ["BOOTSTRAPPER", "OPERATOR"],
+  "hardModes": [],
+  "cosmetics": { "titles": ["Bootstrapper"], "activeTitle": null, "iconSkins": [] },
+  "lastDeathCause": "MISSED_DEADLINE",
+  "runsPlayed": 27
+}

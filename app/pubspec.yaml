@@ -1,0 +1,92 @@
+name: multiples_app
+description: "MULTIPLES — offline finance roguelike. Flutter shell over the pure-Dart engine."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # The deterministic rules engine (pure Dart, packages/engine). The
+  # dependency arrow points ONE way: app -> engine, never the reverse.
+  engine:
+    path: ../packages/engine
+  # Save/persistence (docs/06): the app's private documents directory for
+  # run.json + meta.json. The FIRST native plugin — sanctioned by the R14
+  # work order; the engine stays I/O-free, the app owns the file layer.
+  path_provider: ^2.1.4
+  # AUDIO (R18, docs/08): the looping BGM channel + the simultaneous-SFX
+  # pool. audioplayers is the common choice for "one looping background
+  # track + many overlapping one-shots" — each AudioPlayer is an
+  # independent channel, so the SFX pool and the BGM player never cut each
+  # other. The actual plugin is held behind an injectable backend
+  # (lib/audio.dart AudioBackend) so headless tests record calls without
+  # touching native audio.
+  audioplayers: ^6.6.0
+  # Settings persistence (R18 wires the toggles; R20 builds the SCREEN):
+  # master mute / music on / sfx on, defaulted ON. A tiny key-value store
+  # is the right tool — kept behind AudioSettingsStore so tests use an
+  # in-memory fake and R20 just surfaces the existing flags.
+  shared_preferences: ^2.5.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  # Launcher/app icon generation (publish): regenerates the Android mipmaps
+  # (+ adaptive icon), the web favicon, and the PWA icons from the single
+  # bundled source PNG (assets/icon/app_icon_1024.png). Run once at publish:
+  #   dart run flutter_launcher_icons
+  flutter_launcher_icons: ^0.14.4
+
+# flutter_launcher_icons config (S1): the black-bezel 14× source art replaces
+# the default Flutter logo on Android + web. Background is the bg token
+# (#07090C); the transparent foreground is the adaptive-icon layer.
+flutter_launcher_icons:
+  image_path: "assets/icon/app_icon_1024.png"
+  android: true
+  adaptive_icon_background: "#07090C"
+  adaptive_icon_foreground: "assets/icon/app_icon_fg.png"
+  web:
+    generate: true
+    image_path: "assets/icon/app_icon_1024.png"
+    background_color: "#07090C"
+    theme_color: "#07090C"
+
+flutter:
+  uses-material-design: true
+
+  # BUILD COPIES of /data/*.json (the source of truth), bundled so the app
+  # can hand raw JSON strings to the engine's loadCards/loadEconomy at
+  # runtime. The engine package cannot declare Flutter assets itself (its
+  # purity guard forbids any `flutter:` pubspec key), so the app owns the
+  # bundling — see assets/data/README.md; test/smoke_test.dart pins the
+  # copies byte-identical to /data so a stale copy fails loudly.
+  assets:
+    - assets/data/cards.json
+    - assets/data/economy-model.json
+    # The 18 original chiptune assets (docs/08 audio manifest): 5 looping
+    # BGM moods + 13 one-shot SFX, mono OGG q3. Bundled as a directory so
+    # the AssetSource('audio/<name>.ogg') paths resolve at runtime.
+    - assets/audio/
+
+  # The three art-bible faces (docs/07), BUNDLED — the game is offline, so
+  # no google_fonts runtime fetching. TTFs from the google/fonts repo (OFL):
+  # VT323 (hero numbers), Silkscreen (labels/keys), IBM Plex Mono (body).
+  fonts:
+    - family: VT323
+      fonts:
+        - asset: assets/fonts/VT323-Regular.ttf
+    - family: Silkscreen
+      fonts:
+        - asset: assets/fonts/Silkscreen-Regular.ttf
+        - asset: assets/fonts/Silkscreen-Bold.ttf
+          weight: 700
+    - family: IBMPlexMono
+      fonts:
+        - asset: assets/fonts/IBMPlexMono-Regular.ttf
+        - asset: assets/fonts/IBMPlexMono-Medium.ttf
+          weight: 500

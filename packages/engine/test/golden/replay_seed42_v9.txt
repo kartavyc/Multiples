@@ -1,0 +1,58 @@
+# Golden replay snapshot v9 — MULTIPLES engine (Phase 6 / R15 engine round,
+# audit 2026-06-09). (seed 42, the scripted run in
+# test/golden_replay_test.dart: initRun (founding operator attached) ->
+# operate (organic compounding) -> hire partner + merge -> shop deal +
+# SHOP reroll + buy -> advance -> boundary operate (organic + partner
+# accrual) -> held play -> reinvest)
+# -> this exact end state, one path=value per line, sorted.
+# Supersedes replay_seed42_v8.txt (RETIRED at engineSchemaVersion 9). The
+# state gained backgroundId (the founder background carried on the run
+# state, serialized by flatten() — here BOOTSTRAPPER, the default), the
+# secondary-sale resolver (PlayConsumable.secondaryBp — a new action-shape
+# field in the persisted journal), and endless escalation (T5 behavior).
+# The DRAW ORDER IS UNCHANGED (cursor still 28 — the Bootstrapper seed-42
+# script touches none of the new draw paths); the bump is the widened
+# state/flatten + the persisted journal action shape + the moved endless
+# behavior (docs/03 §6).
+# ANY change to this file is STREAM-BREAKING: never edit it in place.
+# Version a new file (v10), point the test at it, and bump
+# engineSchemaVersion so in-progress runs are abandoned, not mis-replayed.
+actionLog.length=6
+backgroundId=BOOTSTRAPPER
+cash=858100
+death=-1
+exitOffer.multiple=5440
+exitOffer.ventureId=v1
+hand.0=ADD_SW_PLUGIN
+hand.1=PRT_SALES_LEAD
+hand.2=ADD_SW_MICRO
+market.liveRateBp=963
+market.marketReadExpiresRound=103
+market.marketReadHint=2
+market.roundsInState=1
+market.stateDurationRounds=3
+market.temp=2
+netWorthAtTierEntry=5600000
+netWorthLastRound=9651678
+phase=1
+playsRemaining=1
+rerollsUsed=0
+rng.cursor=28
+rngCursor=28
+round=2
+schemaVersion=9
+shopOffers.0=FIN_TERM_LOAN
+shopOffers.1=PLY_DOWN_ROUND
+tier=1
+venture.v1.displayName=QUANTA
+venture.v1.ebitda=1551560
+venture.v1.multiple=5943
+venture.v1.netDebt=0
+venture.v1.own=10000
+venture.v1.partners.0.defId=PRT_FOUNDING_OPERATOR
+venture.v1.partners.0.perRoundEbitda=0
+venture.v1.partners.1.defId=PRT_SALES_LEAD
+venture.v1.partners.1.perRoundEbitda=150000
+venture.v1.passive=0
+venture.v1.roundsNeglected=0
+won=0

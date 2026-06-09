@@ -1,0 +1,50 @@
+# Golden replay snapshot v6 — MULTIPLES engine (Phase 5 / R12 balance
+# round: ORGANIC GROWTH, doc 01 §3.2). (seed 42, the scripted run in
+# test/golden_replay_test.dart: initRun (founding operator attached) ->
+# operate (organic compounding) -> hire partner + merge -> shop deal +
+# SHOP reroll + buy -> advance -> boundary operate (organic + partner
+# accrual) -> held play -> reinvest)
+# -> this exact end state, one path=value per line, sorted.
+# Supersedes replay_seed42_v5.txt (RETIRED at engineSchemaVersion 6 — the
+# VALUES moved: organicGrowthDefault now applied at OPERATE step 3a; the
+# draw order is unchanged from v5; docs/03 §6).
+# ANY change to this file is STREAM-BREAKING: never edit it in place.
+# Version a new file (v7), point the test at it, and bump
+# engineSchemaVersion so in-progress runs are abandoned, not mis-replayed.
+actionLog.length=6
+cash=776200
+death=-1
+exitOffer.multiple=5440
+exitOffer.ventureId=v1
+hand.0=ADD_SW_PLUGIN
+hand.1=PRT_SALES_LEAD
+hand.2=ADD_SW_MICRO
+market.liveRateBp=1084
+market.marketReadExpiresRound=103
+market.marketReadHint=2
+market.roundsInState=1
+market.stateDurationRounds=3
+market.temp=2
+netWorthAtTierEntry=5600000
+netWorthLastRound=8535696
+phase=1
+playsRemaining=1
+rerollsUsed=0
+rng.cursor=28
+rngCursor=28
+round=2
+schemaVersion=6
+shopOffers.0=FIN_TERM_LOAN
+shopOffers.1=PLY_DOWN_ROUND
+tier=1
+venture.v1.ebitda=1377000
+venture.v1.multiple=5943
+venture.v1.netDebt=0
+venture.v1.own=10000
+venture.v1.partners.0.defId=PRT_FOUNDING_OPERATOR
+venture.v1.partners.0.perRoundEbitda=0
+venture.v1.partners.1.defId=PRT_SALES_LEAD
+venture.v1.partners.1.perRoundEbitda=150000
+venture.v1.passive=0
+venture.v1.roundsNeglected=0
+won=0

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MULTIPLES — grey-box UI prototype</title>
+<style>
+  /* ---- Grey-box prototype. No color carries meaning. Weight = real vs paper. ----
+     SOLID 2px border  = "real" / spendable (Cash, primary buttons)
+     DASHED 1px border = "paper" / ghost (Net Worth, secondary)
+     Filled blocks     = discrete meter fills (no animation needed to read)        */
+  :root{
+    --ink:#16140f; --ink2:#46433b; --faint:#8c887d; --line:#c9c5b8;
+    --paper:#e9e5db; --paper2:#f1eee6; --fill:#2a2722; --empty:#cdc9bd;
+    --warn:#16140f;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background:#26241f; color:var(--ink);
+    font-family:"SF Mono",ui-monospace,"Cascadia Mono","Consolas",monospace;
+    display:flex; flex-wrap:wrap; gap:34px; align-items:flex-start;
+    justify-content:center; padding:34px 18px; min-height:100%;
+  }
+  .label{position:fixed; top:10px; left:14px; color:#cfcabc; font-size:11px; letter-spacing:.12em;}
+  /* ---- phone frame ---- */
+  .phone{
+    width:390px; height:844px; background:var(--paper);
+    border:10px solid #0c0b08; border-radius:42px;
+    box-shadow:0 18px 50px rgba(0,0,0,.55), inset 0 0 0 2px #2a2722;
+    position:relative; overflow:hidden; display:flex; flex-direction:column;
+  }
+  .notch{position:absolute; top:0; left:50%; transform:translateX(-50%);
+    width:150px; height:26px; background:#0c0b08; border-radius:0 0 16px 16px; z-index:40;}
+  .screen{position:absolute; inset:0; display:none; flex-direction:column; padding:34px 16px 14px;}
+  .screen.on{display:flex;}
+  .cap{font-size:9px; letter-spacing:.18em; color:var(--faint); text-align:center;
+    position:absolute; bottom:6px; left:0; right:0;}
+
+  /* ---- generic boxes ---- */
+  .box{border:2px solid var(--ink); border-radius:8px; background:var(--paper2);}
+  .ghost{border:1px dashed var(--faint); border-radius:8px; background:transparent;}
+  .btn{border:2px solid var(--ink); border-radius:10px; background:var(--ink); color:var(--paper);
+    text-align:center; padding:13px; font-weight:700; letter-spacing:.1em; cursor:pointer; font-size:13px;}
+  .btn.sec{background:transparent; color:var(--ink); border:1.5px solid var(--ink);}
+  .btn:active{transform:translateY(1px);}
+  .row{display:flex; gap:8px;}
+  .small{font-size:10px; color:var(--ink2);} .tiny{font-size:9px; color:var(--faint); letter-spacing:.08em;}
+  .k{font-size:9px; letter-spacing:.14em; color:var(--faint);}
+
+  /* ===== S0 TITLE ===== */
+  #s0{justify-content:center; align-items:center; gap:0; text-align:center;}
+  #s0 .title{font-size:40px; letter-spacing:.42em; font-weight:800; margin-left:.42em;}
+  #s0 .sub{font-size:11px; letter-spacing:.34em; color:var(--ink2); margin-top:10px;}
+  #s0 .glyph{margin:26px 0 40px; font-size:15px; letter-spacing:.1em; color:var(--ink);
+    border:1px dashed var(--faint); border-radius:30px; padding:8px 18px;}
+  #s0 .menu{width:78%; display:flex; flex-direction:column; gap:12px;}
+  #s0 .foot{position:absolute; bottom:30px; font-size:9px; letter-spacing:.16em; color:var(--faint);}
+
+  /* ===== HUD (S1) ===== */
+  .topbar{display:flex; justify-content:space-between; align-items:center; font-size:10px;
+    color:var(--ink2); letter-spacing:.08em; padding:0 2px 8px;}
+  .gear{font-size:13px;}
+  .hud-money{display:flex; gap:10px; margin-bottom:8px;}
+  .cash{flex:1; padding:9px 11px;} .nw{flex:1; padding:9px 11px;}
+  .cash .v{font-size:23px; font-weight:800; letter-spacing:.02em;}
+  .nw .v{font-size:21px; font-weight:700; color:var(--ink2);}
+  .ptag{font-size:8px; border:1px dashed var(--faint); border-radius:4px; padding:0 3px; color:var(--faint);}
+  .inputs{display:grid; grid-template-columns:repeat(4,1fr); border:2px solid var(--ink);
+    border-radius:8px; overflow:hidden; margin-bottom:8px; background:var(--paper2);}
+  .inputs div{padding:6px 4px; text-align:center; border-right:1px solid var(--line);}
+  .inputs div:last-child{border-right:none;}
+  .inputs .v{font-size:15px; font-weight:700; display:block; margin-top:2px;}
+  .meter{display:flex; align-items:center; gap:7px; font-size:9px; letter-spacing:.06em;
+    color:var(--ink2); margin-bottom:5px;}
+  .meter .nm{width:52px; color:var(--faint);}
+  .bar{display:flex; gap:2px;}
+  .cell{width:9px; height:11px; background:var(--empty); border-radius:1px;}
+  .cell.f{background:var(--fill);}
+  .cell.mark{background:var(--ink); width:4px;}
+  .banner{border:1px solid var(--line); border-radius:7px; padding:7px; text-align:center;
+    font-size:10px; letter-spacing:.08em; color:var(--ink2); margin:3px 0 0; background:var(--paper2);}
+  .hudwrap{border-bottom:1.5px solid var(--line); padding-bottom:10px; margin-bottom:8px;}
+
+  /* ===== ACT stage (S3) ===== */
+  .stage{flex:1; display:flex; flex-direction:column; min-height:0;}
+  .secthead{font-size:9px; letter-spacing:.16em; color:var(--faint); margin:2px 0 5px; display:flex;
+    justify-content:space-between;}
+  .rail{display:flex; gap:8px; margin-bottom:8px;}
+  .vent{flex:1; padding:7px 8px; cursor:pointer; position:relative;}
+  .vent.sel{border-color:var(--ink); box-shadow:inset 0 0 0 2px var(--ink);}
+  .vent .nmv{font-size:10px; font-weight:700; letter-spacing:.04em;}
+  .vent .det{font-size:11px; margin-top:3px; font-weight:700;}
+  .vent .own{font-size:9px; color:var(--ink2); margin-top:2px;}
+  .vent .zz{position:absolute; top:5px; right:7px; font-size:8px; color:var(--faint);}
+  .plays{display:flex; align-items:center; gap:6px; border:1px dashed var(--line); border-radius:7px;
+    padding:6px 8px; margin-bottom:8px; font-size:10px;}
+  .chip{border:1.5px solid var(--ink); border-radius:6px; padding:3px 9px; font-size:10px;}
+  .chip.empty{border-style:dashed; color:var(--faint);}
+  .hand{display:flex; gap:7px; overflow-x:auto; padding-bottom:4px;}
+  .card{min-width:84px; flex:0 0 84px; border:2px solid var(--ink); border-radius:9px;
+    background:var(--paper2); padding:8px 7px; cursor:pointer; display:flex; flex-direction:column; gap:3px;}
+  .card:active{transform:translateY(1px);}
+  .card .type{font-size:9px; letter-spacing:.1em; font-weight:800;}
+  .card .sec{font-size:8px; color:var(--faint); letter-spacing:.08em;}
+  .card .line{font-size:11px; font-weight:700; margin-top:2px;}
+  .card .buy{font-size:9px; color:var(--ink2); margin-top:auto;}
+  .card.hot{box-shadow:inset 0 0 0 2px var(--ink); }
+  .reinvest{font-size:10px; letter-spacing:.06em; color:var(--ink2); margin:9px 0 8px;
+    border:1px dashed var(--line); border-radius:7px; padding:7px; text-align:center;}
+  .actfoot{display:flex; gap:8px; margin-top:auto;}
+  .reroll{flex:0 0 120px; padding:12px;}
+  .endturn{flex:1;}
+
+  /* ===== S6 overlay ===== */
+  #s6{background:rgba(20,18,14,.46); justify-content:center; align-items:center; padding:24px;}
+  .sheet{width:100%; background:var(--paper); border:2px solid var(--ink); border-radius:16px;
+    padding:18px 16px 16px; box-shadow:0 20px 50px rgba(0,0,0,.5);}
+  .flash{text-align:center; font-size:15px; letter-spacing:.22em; font-weight:800; margin-bottom:3px;}
+  .flashsub{text-align:center; font-size:9px; letter-spacing:.14em; color:var(--faint); margin-bottom:14px;}
+  .calc{font-size:11px; text-align:center; color:var(--ink2); line-height:1.7;}
+  .calc b{color:var(--ink);}
+  .hr{border-top:1px solid var(--line); margin:12px 0;}
+  .moverow{display:flex; justify-content:space-between; font-size:13px; padding:3px 2px; font-weight:700;}
+  .moverow .lbl{color:var(--ink2); font-weight:400; font-size:11px;}
+  .arrow{color:var(--faint);}
+  .headline{border:2px solid var(--ink); border-radius:10px; text-align:center; padding:12px;
+    font-size:20px; font-weight:800; letter-spacing:.02em; margin:14px 0 4px;}
+  .headcap{text-align:center; font-size:8px; letter-spacing:.12em; color:var(--faint); margin-bottom:14px;}
+  .num{transition:none;}
+</style>
+</head>
+<body>
+<div class="label">MULTIPLES · grey-box UI prototype · greyscale, static-legible</div>
+
+<!-- ============ PHONE A : S0 TITLE ============ -->
+<div class="phone">
+  <div class="notch"></div>
+
+  <!-- S0 -->
+  <section class="screen on" id="s0">
+    <div class="title">MULTIPLES</div>
+    <div class="sub">GET IN. GET RICH. GET OUT. WAIT, THAT'S ALLOWED?!</div>
+    <div class="glyph">〔 14× 〕</div>
+    <div class="menu">
+      <div class="btn" onclick="show('run')">CONTINUE &nbsp;·&nbsp; T2 R3</div>
+      <div class="btn sec" onclick="show('run')">NEW RUN ▸</div>
+      <div class="btn sec" onclick="show('run')">THE DESK ▸</div>
+    </div>
+    <div class="foot">no account · offline · saved on device</div>
+    <div class="cap">S0 — TITLE / CONTINUE</div>
+  </section>
+
+  <!-- RUN = S1 HUD + S3 ACT -->
+  <section class="screen" id="run">
+    <div class="hudwrap">
+      <div class="topbar">
+        <span>T2 · ROUND 3/6</span><span>seed#4F2A</span><span class="gear" onclick="show('s0')">⚙</span>
+      </div>
+      <div class="hud-money">
+        <div class="box cash">
+          <div class="k">CASH</div>
+          <div class="v" id="hudCash">$182k</div>
+        </div>
+        <div class="ghost nw">
+          <div class="k">NET WORTH <span class="ptag">paper</span></div>
+          <div class="v" id="hudNW">$4.21M</div>
+        </div>
+      </div>
+      <div class="inputs">
+        <div><span class="k">EBITDA</span><span class="v" id="hudEb">$310k</span></div>
+        <div><span class="k">MULT</span><span class="v" id="hudMu">11.0×</span></div>
+        <div><span class="k">NET DEBT</span><span class="v">$1.20M</span></div>
+        <div><span class="k">OWN%</span><span class="v">64%</span></div>
+      </div>
+      <div class="meter">
+        <span class="nm">RUNWAY</span>
+        <span class="bar"><i class="cell f"></i><i class="cell f"></i><i class="cell f"></i><i class="cell f"></i><i class="cell f"></i><i class="cell f"></i><i class="cell"></i><i class="cell"></i><i class="cell"></i></span>
+        <span>OK · next $48k/$96k</span>
+      </div>
+      <div class="meter">
+        <span class="nm">MARKET</span>
+        <span class="bar"><i class="cell"></i><i class="cell"></i><i class="cell mark"></i><i class="cell f"></i><i class="cell f"></i><i class="cell mark"></i><i class="cell"></i><i class="cell"></i></span>
+        <span>NEUTRAL · read —</span>
+      </div>
+      <div class="banner">〔 SOFTWARE bubble forming 〕</div>
+    </div>
+
+    <!-- S3 stage -->
+    <div class="stage">
+      <div class="secthead"><span>VENTURES · SLOTS 2/2</span></div>
+      <div class="rail">
+        <div class="box vent sel" onclick="selVent(this)">
+          <div class="nmv"># A · SOFTWARE</div>
+          <div class="det">$310k · 11.0×</div>
+          <div class="own">own 64%</div>
+        </div>
+        <div class="box vent" onclick="selVent(this)">
+          <span class="zz">zz 2rd ⚠</span>
+          <div class="nmv">B · SERVICES</div>
+          <div class="det">$140k · 5.0×</div>
+          <div class="own">own 100%</div>
+        </div>
+      </div>
+
+      <div class="plays">
+        <span class="k">PLAYS</span>
+        <span class="chip">Bridge</span><span class="chip empty">+</span>
+        <span style="margin-left:auto" class="tiny">held 1/2</span>
+      </div>
+
+      <div class="secthead"><span>THIS ROUND'S DEALS</span><span>PLAYS 2/3 ◀</span></div>
+      <div class="hand">
+        <div class="card hot" onclick="arb()">
+          <span class="type">ADD-ON</span><span class="sec">SOFTWARE · same</span>
+          <span class="line">EB $40k</span><span class="line">4.5×</span>
+          <span class="buy">buy $90k ▸</span>
+        </div>
+        <div class="card" onclick="arb()">
+          <span class="type">RAISE</span><span class="sec">— equity</span>
+          <span class="line">+$250k</span><span class="line">−own</span>
+          <span class="buy">dilute ▸</span>
+        </div>
+        <div class="card" onclick="arb()">
+          <span class="type">PARTNER</span><span class="sec">SOFTWARE</span>
+          <span class="line">+EB/rd</span><span class="line">$30k</span>
+          <span class="buy">hire ▸</span>
+        </div>
+        <div class="card" onclick="arb()">
+          <span class="type">EXIT</span><span class="sec">B offer</span>
+          <span class="line">@ 6.0×</span><span class="line">IPO</span>
+          <span class="buy">cash out ▸</span>
+        </div>
+      </div>
+
+      <div class="reinvest">REINVEST (baseline) ▸ &nbsp; always available</div>
+
+      <div class="actfoot">
+        <div class="btn sec reroll">REROLL<br><span class="tiny">$15k</span></div>
+        <div class="btn endturn" onclick="show('s0')">END TURN</div>
+      </div>
+    </div>
+    <div class="cap">S1 RUN HUD + S3 DEAL-FLOW HAND</div>
+  </section>
+
+  <!-- S6 OVERLAY -->
+  <section class="screen" id="s6">
+    <div class="sheet">
+      <div class="flash">MULTIPLE ARBITRAGE</div>
+      <div class="flashsub">SAME-SECTOR · BOLTED AT THE PLATFORM MULTIPLE</div>
+      <div class="calc">
+        <b>$40k</b> earnings &nbsp;bought at&nbsp; <b>4.5×</b><br>
+        <span class="arrow">▼ bolted onto</span><br>
+        Platform <b>#A</b> &nbsp;@&nbsp; <b>11.0×</b>
+      </div>
+      <div class="hr"></div>
+      <div class="moverow"><span class="lbl">EBITDA</span><span><span class="num">$310k</span> <span class="arrow">→</span> <span class="num" id="ebTo">$310k</span></span></div>
+      <div class="moverow"><span class="lbl">Multiple</span><span>11.0× <span class="arrow">→</span> 11.0× <span class="tiny">held</span></span></div>
+      <div class="moverow"><span class="lbl">Cash</span><span>$182k <span class="arrow">→</span> $92k</span></div>
+      <div class="hr"></div>
+      <div class="headline"><span id="head">+$0</span></div>
+      <div class="headcap">EQUITY VALUE · DERIVED, NEVER A STORED SCORE</div>
+      <div class="btn" onclick="endArb()">NICE.</div>
+    </div>
+    <div class="cap">S6 — VALUATION / SCORING MOMENT</div>
+  </section>
+</div>
+
+<script>
+  function show(id){
+    document.querySelectorAll('.phone .screen').forEach(s=>s.classList.remove('on'));
+    document.getElementById(id).classList.add('on');
+  }
+  function selVent(el){
+    el.parentElement.querySelectorAll('.vent').forEach(v=>v.classList.remove('sel'));
+    el.classList.add('sel');
+  }
+  // S6 — the signature reveal. Static-legible: lands on final numbers (animation is later garnish).
+  function arb(){
+    show('s6');
+    // same-sector: absorb $40k at 11x + 20% synergy on absorbed = +$8k  => 310 -> 358
+    document.getElementById('ebTo').textContent = '$358k';
+    // your 64% of EV delta (358-310)*11 = $528k EV; equity (no new debt) -> your slice
+    document.getElementById('head').textContent = '+$338k';
+  }
+  function endArb(){
+    // reflect the committed deltas back into the HUD on return to ACT
+    document.getElementById('hudEb').textContent = '$358k';
+    document.getElementById('hudCash').textContent = '$92k';
+    document.getElementById('hudNW').textContent = '$4.46M';
+    show('run');
+  }
+</script>
+</body>
+</html>

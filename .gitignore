@@ -1,0 +1,34 @@
+# Dart / Flutter
+.dart_tool/
+.packages
+build/
+*.g.dart
+.flutter-plugins
+.flutter-plugins-dependencies
+pubspec.lock
+
+# Android
+app/android/.gradle/
+app/android/local.properties
+*.keystore
+*.jks
+# Release signing secrets — NEVER commit these. Losing the keystore means you
+# can never push an update to a published app. Back it up offline.
+app/android/key.properties
+upload-keystore.jks
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+Thumbs.db
+.DS_Store
+
+# Claude: keep CLAUDE.md, .claude/rules/, .claude/STATE.md tracked (shared memory).
+# Ignore only personal/local memory + settings.
+CLAUDE.local.md
+.claude/settings.local.json
+
+# Python scratch
+__pycache__/
+*.pyc

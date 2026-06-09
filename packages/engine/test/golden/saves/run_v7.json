@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 7,
+  "seed": 7314159265358979,
+  "cursor": 142,
+  "startConfig": { "runId": "r_7f3a", "backgroundId": "BOOTSTRAPPER" },
+  "_note": "A SYNTHETIC pre-save-layer (v7) run save. v7 has no typed RunStep journal — its actionLog (if any) is the old display-only LoggedAction shape — so it CANNOT be replayed by the v8 engine. migrateRun(it, 7) MUST throw AbandonRun (docs/06 §3 STREAM-BREAKING). The exact fields below are illustrative; the loader never gets past the version gate.",
+  "actionLog": []
+}

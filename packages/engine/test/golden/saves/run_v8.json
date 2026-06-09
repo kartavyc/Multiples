@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 8,
+  "seed": 8271828182845904,
+  "cursor": 96,
+  "startConfig": { "runId": "r_4d2f", "backgroundId": "BOOTSTRAPPER" },
+  "_note": "A SYNTHETIC v8 run save (the save-layer era, before the R15 backgroundId-on-state field + the secondaryBp journal field + endless escalation). 8->9 is STREAM-BREAKING: a v8 run reconciles against a flatten that now includes backgroundId (and its journal may carry consumable steps without secondaryBp), so it cannot be trusted by the v9 engine. migrateRun(it, 8) MUST throw AbandonRun (docs/06 §3). The actionLog below is a minimal valid v8 journal; the loader never gets past the version gate.",
+  "actionLog": [
+    { "s": "operate" },
+    { "s": "endTurn" },
+    { "s": "deadlineCheck" }
+  ]
+}

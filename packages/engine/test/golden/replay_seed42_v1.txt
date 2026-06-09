@@ -1,0 +1,19 @@
+# Golden replay snapshot v1 — MULTIPLES engine (Task 1.7).
+# (seed 42, the scripted 15-action log in test/golden_replay_test.dart)
+#   -> this exact end state, one path=value per line, sorted.
+# ANY change to this file is STREAM-BREAKING per docs/03 §6: never edit it
+# in place. Version a new file (v2), point the test at it, and bump
+# GameState.schemaVersion so in-progress runs are abandoned, not mis-replayed.
+actionLog.length=13
+cash=16357421
+rerollsUsed=1
+rng.cursor=0
+rngCursor=0
+round=1
+schemaVersion=1
+tier=4
+venture.v2.ebitda=450000
+venture.v2.multiple=3000
+venture.v2.netDebt=0
+venture.v2.own=10000
+venture.v2.passive=1

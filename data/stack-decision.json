@@ -1,0 +1,67 @@
+{
+  "chosenStack": "Flutter",
+  "language": "Dart",
+  "fileExtension": ".dart",
+  "runtime": "Flutter (Dart AOT on iOS/Android for the app; Dart VM via `dart test` for the pure headless engine and balance harness)",
+  "alternativesScored": [
+    {
+      "name": "Flutter + Dart",
+      "score": 117,
+      "pros": [
+        "Resolver is plain Dart with zero Flutter imports: pure, headless, run by `dart test` with no widget tree, emulator, or engine context",
+        "`dart test` is fast and built-in; invariant test and Monte-Carlo balance harness run in CI in milliseconds with no device",
+        "One widget codebase renders pixel-identically on iOS and Android (Flutter owns rendering), no per-platform UI branching",
+        "Built-in animation (Tween, implicit animations, flutter_animate) covers card flip and arbitrage flash without a separate render lib",
+        "Single-toolchain dual-store build: `flutter build appbundle` and `flutter build ipa` from one repo",
+        "One language top to bottom (engine, UI, tests, tooling), ideal for a two-person team",
+        "Native JSON content pipeline via dart:convert + json_serializable codegen into typed objects; PLAYS reuse the card schema",
+        "Dart int is 64-bit on mobile, enabling integer-only deterministic math (SplitMix64 stream, integer-cents money) with no float in the engine"
+      ],
+      "cons": [
+        "Smaller ecosystem than JavaScript",
+        "iOS release still needs a Mac + Xcode for signing/upload (unavoidable on any stack)",
+        "json_serializable / build_runner codegen is a real maintenance step (re-run on every schema change; must be a CI step), not a freebie",
+        "Heavy custom 2D VFX would eventually want Flame/Skia, but this game is explicitly not GUI-heavy so it never bites"
+      ]
+    },
+    {
+      "name": "React Native + TypeScript",
+      "score": 96,
+      "pros": [
+        "TypeScript gives a clean pure-function resolver, (state, action, rng) => state, with excellent JSON ergonomics",
+        "Jest is a first-class headless test runner for the invariant + balance harness",
+        "Large hiring and AI-assist familiarity",
+        "One codebase ships to both stores"
+      ],
+      "cons": [
+        "Native-module + Metro + CocoaPods + Gradle surface is a real maintenance tax for two people and breaks on upgrade in costly ways",
+        "Good-feeling card animation (arbitrage flash, scoring beat) pulls in Reanimated/Skia, another dependency layer with its own footguns",
+        "JS bridge / new-architecture boundary is extra surface the job does not need"
+      ]
+    },
+    {
+      "name": "Godot 4 (GDScript/C#)",
+      "score": 89,
+      "pros": [
+        "Free and open source, exports to iOS and Android with no per-platform UI code",
+        "Scene system is pleasant for card layouts",
+        "Strong for Balatro-style scoring-moment juice"
+      ],
+      "cons": [
+        "Headless-test story is weak: GDScript unit testing leans on engine-context addons (GUT); a truly pure, engine-free, millisecond-fast resolver and Monte-Carlo harness is awkward, and the tests are the product here",
+        "Mobile export/signing pipeline is the least batteries-included of the three, likely to eat a two-person team's weekend",
+        "C# would help testing but splits the language story",
+        "Optimizes rendering this game does not need at the cost of the testing it lives or dies by"
+      ]
+    }
+  ],
+  "rationale": "MULTIPLES is a deterministic state machine over per-venture integer quantities (EBITDA, Multiple, Net Debt, Ownership% held per venture) plus one global integer-cents Cash pot, with a thin animated 2D card UI; net worth is derived, never stored. It is a data-and-rules problem, not a game-engine problem: no physics, networking, accounts, or server. The hard parts are numerical correctness, byte-for-byte seed reproducibility (for the stored-log AUTOPSY screen and the Monte-Carlo balance harness), content velocity via data-as-JSON, and dual-store shipping for two people. Scoring weighted the two axes that matter most for this game and team at 3x each: a pure, headless, fast-to-test rules engine, and painless single-toolchain dual-store shipping. Flutter wins both decisively: the resolver is a pure Dart package with no Flutter dependency (enforced by package boundary) that runs under `dart test` with no device, the UI is one codebase rendering identically on both platforms via Flutter's own renderer, and both stores build from one toolchain in a single language. Determinism is integer-only with a pinned SplitMix64 stream and a golden draw-order file so replay is byte-for-byte across ABIs. React Native is a viable runner-up but carries a native-module/Metro/CocoaPods/Gradle maintenance tax; Godot scores lowest because its strength (rendering) is irrelevant here and its weakness (engine-context-dependent testing) hits the exact axis the project depends on.",
+  "deploymentDecision": {
+    "locked": "2026-06-06",
+    "decision": "Flutter confirmed. ANDROID-FIRST. Develop and ship Android entirely from Windows. iOS deferred.",
+    "reason": "Solo dev is on Windows; Apple's toolchain (build/sign/upload to App Store) requires macOS for ANY stack, so this is a pipeline choice, not a stack choice. Day-to-day dev (code, Android emulator, pure-Dart `dart test`, balance harness) is 100% Windows-resident.",
+    "androidPath": "flutter build appbundle -> Play Console, all on Windows. No Mac needed.",
+    "iosLater": "When ready: Codemagic free-tier (Flutter-native cloud Mac CI, ~500 build-min/mo) or GitHub Actions macOS runners for build+sign+TestFlight, OR a rented/owned Mac. One codebase => iOS is a build/sign exercise, not a rewrite.",
+    "guardrail": "Keep all code platform-neutral (no Android-only plugins without an iOS-capable equivalent) so the eventual iOS build stays a pipeline step. Engine package must keep zero Flutter imports."
+  }
+}

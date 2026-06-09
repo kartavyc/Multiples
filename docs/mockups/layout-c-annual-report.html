@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>MULTIPLES — Layout C: The Annual Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,600&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f4efe2;        /* cream/ivory stock */
+    --paper-dk: #ece5d3;     /* slightly toned panel */
+    --ink: #1c1a16;          /* near-black ink */
+    --ink-soft: #4a463e;
+    --ink-faint: #8a8474;    /* ghosted figures */
+    --oxblood: #6e1423;      /* the one accent */
+    --gold: #b08d2e;         /* gold-foil details */
+    --gold-hi: #e6c468;
+    --rule: #1c1a16;
+    --good: #1f5c33;         /* used sparingly inside memo math */
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; background: #2b2620; }
+  body {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .serif { font-family: 'Playfair Display', serif; }
+  .sc { letter-spacing: .14em; text-transform: uppercase; }
+
+  /* ============ phone frame ============ */
+  #phone {
+    position: relative;
+    width: 412px; height: 860px;
+    max-height: 100vh;
+    border-radius: 22px;
+    overflow: hidden;
+    background: var(--paper);
+    box-shadow: 0 0 0 6px #0d0b09, 0 0 70px rgba(0,0,0,.85);
+  }
+  /* paper grain */
+  #phone::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+    background-image:
+      radial-gradient(rgba(28,26,22,.05) 1px, transparent 1px),
+      radial-gradient(rgba(255,255,255,.5) 1px, transparent 1.2px);
+    background-size: 5px 5px, 9px 9px;
+    background-position: 0 0, 3px 4px;
+    opacity: .55;
+  }
+  /* faint aged edge */
+  #phone::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+    background: radial-gradient(ellipse 95% 92% at 50% 42%, transparent 62%, rgba(110,20,35,.05) 100%);
+  }
+  #page {
+    position: absolute; inset: 0; z-index: 2;
+    display: flex; flex-direction: column;
+    padding: 14px 16px 12px;
+  }
+  #page.shake { animation: shake .45s linear; }
+  @keyframes shake {
+    0%,100% { transform: translate(0,0) rotate(0); }
+    15% { transform: translate(-5px,3px) rotate(-.4deg); }
+    30% { transform: translate(5px,-3px) rotate(.4deg); }
+    45% { transform: translate(-4px,-2px) rotate(-.3deg); }
+    60% { transform: translate(4px,2px) rotate(.3deg); }
+    80% { transform: translate(-2px,1px) rotate(-.15deg); }
+  }
+
+  /* ============ typographic rules ============ */
+  .double-rule { border-top: 3px solid var(--rule); position: relative; }
+  .double-rule::after { content: ""; display: block; border-top: 1px solid var(--rule); margin-top: 2px; }
+  .hairline { border-top: 1px solid var(--rule); }
+
+  /* ============ masthead ============ */
+  #masthead { text-align: center; flex-shrink: 0; }
+  #masthead .top-rule { margin-bottom: 6px; }
+  #masthead h1 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900; font-size: 33px; letter-spacing: .08em; line-height: 1;
+    color: var(--ink);
+  }
+  #masthead h1 .x-glyph { color: var(--oxblood); }
+  #masthead .deck {
+    font-size: 9.5px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--ink-soft); margin-top: 4px;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+  }
+  #masthead .deck b { color: var(--ink); font-weight: 600; }
+  #masthead .deck .dot { color: var(--gold); }
+  #masthead .bot-rule { margin-top: 6px; }
+  .bot-rule { border-bottom: 3px solid var(--rule); position: relative; }
+  .bot-rule::before { content: ""; display: block; border-bottom: 1px solid var(--rule); margin-bottom: 2px; }
+
+  /* ============ section labels ============ */
+  .sect-lbl {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 8.5px; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--ink-soft); font-weight: 600;
+    margin: 8px 0 4px;
+  }
+  .sect-lbl::before, .sect-lbl::after { content: ""; flex: 1; border-top: 1px solid rgba(28,26,22,.45); }
+  .sect-lbl .roman { color: var(--oxblood); }
+
+  /* ============ key figures ============ */
+  #key-figures { display: flex; gap: 10px; align-items: stretch; }
+  .kf-box { flex: 1; padding: 6px 10px 7px; position: relative; }
+  .kf-box .kf-lbl { font-size: 8.5px; letter-spacing: .2em; text-transform: uppercase; font-weight: 600; }
+  .kf-box .kf-val {
+    font-family: 'IBM Plex Mono', monospace; font-weight: 700;
+    font-size: 27px; line-height: 1.12; margin-top: 1px; white-space: nowrap;
+  }
+  /* CASH — solid, real, inked */
+  #kf-cash {
+    border: 2.5px solid var(--ink);
+    box-shadow: 3px 3px 0 rgba(28,26,22,.85);
+    background: var(--paper);
+    color: var(--ink);
+  }
+  #kf-cash .kf-lbl { color: var(--oxblood); }
+  /* NET WORTH — ghosted, paper */
+  #kf-nw {
+    border: 1px solid rgba(138,132,116,.75);
+    color: var(--ink-faint);
+    background: transparent;
+  }
+  #kf-nw .kf-lbl { color: var(--ink-faint); }
+  #kf-nw .kf-val { font-weight: 500; }
+  #kf-nw sup { font-size: 11px; color: var(--oxblood); font-weight: 600; }
+  #kf-nw .fn {
+    font-size: 7.5px; color: var(--ink-faint); letter-spacing: .04em;
+    margin-top: 1px; font-style: italic; font-family: 'Playfair Display', serif;
+  }
+  #kf-nw .fn b { color: var(--oxblood); font-style: normal; }
+
+  /* 4-column figures table */
+  #fig-table {
+    display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
+    border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+    margin-top: 7px;
+  }
+  #fig-table .cell { text-align: center; padding: 4px 2px 5px; position: relative; }
+  #fig-table .cell + .cell::before {
+    content: ""; position: absolute; left: 0; top: 5px; bottom: 5px;
+    border-left: 1px solid rgba(28,26,22,.3);
+  }
+  #fig-table .f-lbl { font-size: 7.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-soft); }
+  #fig-table .f-val { font-size: 16.5px; font-weight: 600; margin-top: 1px; }
+  .f-val.tick { animation: tickpop .55s ease; }
+  @keyframes tickpop { 0% { transform: scale(1); } 35% { transform: scale(1.3); color: var(--oxblood); } 100% { transform: scale(1); } }
+
+  /* ============ exhibits: meters as report charts ============ */
+  #exhibits { display: flex; gap: 12px; margin-top: 2px; }
+  .exhibit { flex: 1; }
+  .ex-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 8px; letter-spacing: .16em; text-transform: uppercase; font-weight: 600;
+  }
+  .ex-head .verdict { color: var(--oxblood); letter-spacing: .1em; }
+  /* runway = horizontal bar chart */
+  #runway-chart { margin-top: 4px; }
+  .rbar-track {
+    height: 9px; border: 1px solid var(--ink); background: var(--paper);
+    position: relative;
+  }
+  .rbar-fill {
+    position: absolute; inset: 1px auto 1px 1px; width: 48%;
+    background: repeating-linear-gradient(45deg, var(--ink) 0 3px, transparent 3px 6px);
+  }
+  .rbar-needline {
+    position: absolute; top: -3px; bottom: -3px; left: 50%; width: 0;
+    border-left: 2px solid var(--oxblood);
+  }
+  .ex-cap {
+    font-size: 7.5px; line-height: 1.45; color: var(--ink-soft);
+    margin-top: 3px; font-style: italic; font-family: 'Playfair Display', serif;
+  }
+  .ex-cap b { font-style: normal; font-family: 'IBM Plex Mono', monospace; font-size: 7.5px; }
+  /* market = small gauge */
+  #market-gauge { margin-top: 4px; position: relative; }
+  .mg-track {
+    height: 9px; border: 1px solid var(--ink); display: flex;
+  }
+  .mg-track i { flex: 1; border-right: 1px dotted rgba(28,26,22,.4); }
+  .mg-track i:last-child { border-right: none; }
+  .mg-needle {
+    position: absolute; top: -4px; width: 0; height: 0; left: 56%;
+    border-left: 5px solid transparent; border-right: 5px solid transparent;
+    border-top: 7px solid var(--oxblood);
+    margin-left: -5px;
+    animation: drift 4s ease-in-out infinite;
+  }
+  @keyframes drift { 0%,100% { left: 54%; } 50% { left: 60%; } }
+  .mg-scale {
+    display: flex; justify-content: space-between; font-size: 6.5px;
+    letter-spacing: .12em; color: var(--ink-soft); margin-top: 2px;
+  }
+  .mg-scale .cur { color: var(--ink); font-weight: 700; }
+
+  /* ============ market banner: newspaper clipping ============ */
+  #clipping {
+    margin-top: 8px;
+    border-top: 2px solid var(--ink); border-bottom: 1px solid var(--ink);
+    background: var(--paper-dk);
+    padding: 4px 10px 5px;
+    transform: rotate(-.35deg);
+    box-shadow: 1px 2px 3px rgba(28,26,22,.12);
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  #clipping .kicker {
+    font-size: 7px; letter-spacing: .18em; color: var(--oxblood); font-weight: 700; white-space: nowrap;
+  }
+  #clipping .head {
+    font-family: 'Playfair Display', serif; font-weight: 800; font-style: italic;
+    font-size: 12.5px; line-height: 1.15; color: var(--ink); letter-spacing: .01em;
+  }
+
+  /* ============ portfolio schedule ============ */
+  #schedule { margin-top: 1px; }
+  .sched-row {
+    display: flex; align-items: baseline; gap: 6px;
+    border-bottom: 1px solid rgba(28,26,22,.5);
+    padding: 4px 2px 5px;
+    transition: background .25s;
+  }
+  .sched-row.target-hot { background: rgba(176,141,46,.16); outline: 2px solid var(--gold); outline-offset: -2px; }
+  .sched-row .co { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 13.5px; white-space: nowrap; }
+  .sched-row .sec { font-size: 7.5px; letter-spacing: .14em; color: var(--oxblood); font-weight: 600; }
+  .sched-row .nums { margin-left: auto; font-size: 10.5px; color: var(--ink-soft); white-space: nowrap; }
+  .sched-row .nums b { color: var(--ink); font-weight: 600; }
+
+  /* ============ the hand: deal tombstones ============ */
+  #mandates-head { display: flex; align-items: baseline; }
+  #mandates-head::before, #mandates-head::after { display: none; }
+  #mandates-head > span:first-child { flex: 1; border-bottom: 1px solid rgba(28,26,22,.45); padding-bottom: 2px; margin-right: 8px; }
+  #mandates-head .actions-ct {
+    margin-left: auto; font-size: 8px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--ink); font-weight: 700;
+  }
+  #mandates-head .actions-ct .n { color: var(--oxblood); }
+  #tombstones {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 9px;
+    margin-top: 3px; flex: 1; min-height: 0;
+  }
+  .tomb {
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    position: relative;
+    padding: 7px 7px 8px;
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+    cursor: pointer;
+    transition: transform .15s ease, box-shadow .15s ease;
+    box-shadow: 2px 2px 0 rgba(28,26,22,.55);
+  }
+  /* inner hairline = classic tombstone double frame */
+  .tomb::before {
+    content: ""; position: absolute; inset: 3px; border: 1px solid var(--ink); pointer-events: none;
+  }
+  .tomb:hover, .tomb.sel { transform: translateY(-3px); box-shadow: 3px 5px 0 rgba(28,26,22,.5), 0 0 0 2px var(--gold); }
+  .tomb .t-type {
+    font-size: 7px; letter-spacing: .26em; text-transform: uppercase; font-weight: 700;
+    color: var(--paper); background: var(--ink); padding: 2px 7px 1px; margin-top: 1px;
+  }
+  .tomb .t-type.accent { background: var(--oxblood); }
+  .tomb .t-name {
+    font-family: 'Playfair Display', serif; font-weight: 700; font-size: 13px;
+    line-height: 1.1; margin: 5px 0 2px; color: var(--ink);
+  }
+  .tomb .t-fig { font-size: 9.5px; line-height: 1.5; color: var(--ink-soft); }
+  .tomb .t-fig b { color: var(--ink); font-weight: 600; }
+  .tomb .t-foot {
+    margin-top: auto; padding-top: 4px; width: 78%;
+    border-top: 1px solid rgba(28,26,22,.55);
+    font-size: 7px; letter-spacing: .2em; text-transform: uppercase; color: var(--oxblood); font-weight: 700;
+  }
+  .tomb .t-ornament { color: var(--gold); font-size: 8px; line-height: 1; margin-top: 2px; }
+  /* executed state */
+  .tomb.done { pointer-events: none; }
+  .tomb.done .t-name, .tomb.done .t-fig, .tomb.done .t-foot, .tomb.done .t-type, .tomb.done .t-ornament { opacity: .32; }
+  .stamp {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%) rotate(-14deg) scale(2.4);
+    font-size: 15px; letter-spacing: .28em; text-transform: uppercase; font-weight: 700;
+    color: var(--oxblood); border: 2.5px solid var(--oxblood);
+    padding: 3px 10px 2px; opacity: 0;
+    mix-blend-mode: multiply;
+  }
+  .tomb.done .stamp { animation: stampin .4s cubic-bezier(.2,1.6,.4,1) forwards; }
+  @keyframes stampin {
+    0% { opacity: 0; transform: translate(-50%,-50%) rotate(-14deg) scale(2.4); }
+    65% { opacity: 1; transform: translate(-50%,-50%) rotate(-14deg) scale(.92); }
+    100% { opacity: .9; transform: translate(-50%,-50%) rotate(-14deg) scale(1); }
+  }
+
+  /* ============ bottom: closing line ============ */
+  #closing {
+    flex-shrink: 0; margin-top: 8px; padding-top: 7px;
+    border-top: 2px solid var(--ink);
+    display: flex; align-items: center; gap: 9px;
+  }
+  #reinvest-fn {
+    font-size: 8px; letter-spacing: .04em; color: var(--ink-soft);
+    text-decoration: underline; text-underline-offset: 2px; cursor: pointer;
+    font-style: italic; font-family: 'Playfair Display', serif;
+  }
+  #closing .spacer { flex: 1; }
+  .btn {
+    font-family: 'IBM Plex Mono', monospace; cursor: pointer; user-select: none;
+    transition: transform .08s, box-shadow .08s;
+  }
+  .btn:active { transform: translateY(2px); }
+  #btn-reroll {
+    background: transparent; border: 1.5px solid var(--ink); color: var(--ink);
+    font-size: 9px; letter-spacing: .1em; font-weight: 600;
+    padding: 7px 10px 6px; text-transform: uppercase;
+  }
+  #btn-reroll small { display: block; font-size: 6.5px; letter-spacing: .08em; color: var(--ink-soft); font-weight: 400; margin-top: 1px; text-transform: none; font-style: italic; }
+  #btn-end {
+    background: var(--ink); color: var(--paper);
+    border: none; box-shadow: 3px 3px 0 rgba(110,20,35,.85);
+    font-size: 10.5px; letter-spacing: .14em; font-weight: 700;
+    padding: 9px 14px 8px; text-transform: uppercase;
+  }
+  #btn-end:active { box-shadow: 1px 1px 0 rgba(110,20,35,.85); }
+  #btn-end small { display: block; font-size: 6.5px; letter-spacing: .12em; color: var(--gold-hi); font-weight: 500; margin-top: 1px; }
+
+  /* hint */
+  #hint {
+    position: absolute; z-index: 8; left: 0; right: 0; bottom: 270px;
+    text-align: center; font-size: 9px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--oxblood); font-weight: 700; pointer-events: none;
+    animation: hintpulse 1.6s ease-in-out infinite;
+  }
+  @keyframes hintpulse { 0%,100% { opacity: .45; } 50% { opacity: 1; } }
+
+  /* ============ overlays ============ */
+  .overlay {
+    position: absolute; inset: 0; z-index: 50; display: none;
+    background: rgba(28,26,22,.45);
+    align-items: center; justify-content: center;
+  }
+  .overlay.show { display: flex; }
+
+  /* THE NAPKIN — back-of-envelope memo sheet */
+  #napkin-sheet {
+    width: 88%; background: #f8f4e8;
+    border: 1px solid rgba(28,26,22,.35);
+    box-shadow: 0 14px 40px rgba(0,0,0,.4), 0 2px 0 rgba(28,26,22,.2);
+    padding: 16px 18px 16px;
+    transform: rotate(.6deg);
+    animation: memoin .3s cubic-bezier(.2,1.3,.5,1);
+    position: relative;
+  }
+  /* ledger lines on the memo */
+  #napkin-sheet::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(180deg, transparent 0 27px, rgba(110,20,35,.07) 27px 28px);
+  }
+  @keyframes memoin { from { transform: rotate(.6deg) translateY(36px); opacity: 0; } to { transform: rotate(.6deg) translateY(0); opacity: 1; } }
+  #napkin-sheet .memo-tag {
+    text-align: center; font-size: 8px; letter-spacing: .3em; text-transform: uppercase;
+    color: var(--oxblood); font-weight: 700;
+  }
+  #napkin-sheet h3 {
+    font-family: 'Playfair Display', serif; font-weight: 800; font-size: 17px;
+    text-align: center; margin: 3px 0 2px; letter-spacing: .02em;
+  }
+  #napkin-sheet .memo-sub {
+    text-align: center; font-size: 8.5px; color: var(--ink-soft); letter-spacing: .08em;
+    text-transform: uppercase; margin-bottom: 9px;
+  }
+  .memo-rule { border-top: 1px solid var(--ink); margin: 4px 0 6px; }
+  .mrow {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 11px; padding: 4.5px 0;
+  }
+  .mrow .k { color: var(--ink-soft); font-size: 9.5px; letter-spacing: .04em; }
+  .mrow .v { font-weight: 600; font-size: 12px; }
+  .mrow .v.neg { color: var(--oxblood); }
+  .mrow .v.pos { color: var(--good); }
+  .memo-note {
+    font-family: 'Playfair Display', serif; font-style: italic;
+    font-size: 9.5px; line-height: 1.5; color: var(--ink-soft);
+    padding: 7px 2px 10px;
+  }
+  .memo-actions { display: flex; gap: 10px; position: relative; }
+  .memo-actions .btn { flex: 1; padding: 9px 0 8px; font-size: 10px; letter-spacing: .14em; font-weight: 700; text-transform: uppercase; text-align: center; }
+  #btn-decline { background: transparent; border: 1.5px solid var(--ink); color: var(--ink); }
+  #btn-execute { background: var(--oxblood); color: var(--paper); border: none; box-shadow: 2.5px 2.5px 0 rgba(28,26,22,.8); }
+
+  /* ============ ARBITRAGE — breaking headline page ============ */
+  #arb-page {
+    position: absolute; inset: 0; z-index: 60; display: none;
+    background: var(--paper);
+    padding: 30px 22px 26px;
+    flex-direction: column; align-items: center; text-align: center;
+  }
+  #arb-page.show { display: flex; }
+  #arb-page::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background-image:
+      radial-gradient(rgba(28,26,22,.05) 1px, transparent 1px),
+      radial-gradient(rgba(255,255,255,.5) 1px, transparent 1.2px);
+    background-size: 5px 5px, 9px 9px; opacity: .55;
+  }
+  #arb-page > * { position: relative; z-index: 2; }
+  #arb-kicker {
+    font-size: 8.5px; letter-spacing: .3em; text-transform: uppercase; color: var(--oxblood); font-weight: 700;
+    border-top: 3px double var(--ink); border-bottom: 1px solid var(--ink);
+    padding: 5px 18px 4px; margin-top: 14px;
+    animation: fadein .4s ease both;
+  }
+  #arb-title {
+    font-family: 'Playfair Display', serif; font-weight: 900;
+    font-size: 47px; line-height: .96; letter-spacing: .01em; color: var(--ink);
+    margin: 16px 0 4px;
+    animation: headlinein .55s cubic-bezier(.2,1.4,.4,1) both .15s;
+  }
+  @keyframes headlinein { from { transform: scale(.75) translateY(18px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+  @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+  #arb-sub {
+    font-family: 'Playfair Display', serif; font-style: italic; font-size: 12px;
+    color: var(--ink-soft); margin-bottom: 18px;
+    animation: fadein .5s ease both .4s;
+  }
+  #arb-sub b { font-style: normal; color: var(--oxblood); font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
+  #arb-math {
+    width: 100%; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink);
+    padding: 8px 6px; animation: fadein .5s ease both .55s;
+  }
+  #arb-math .mrow { padding: 5px 4px; }
+  #arb-math .mrow .k { font-size: 9px; letter-spacing: .14em; text-transform: uppercase; }
+  #arb-math .mrow .v { font-size: 17px; font-weight: 700; }
+  #arb-math .mrow .v.held { color: var(--ink-soft); font-size: 13px; font-weight: 500; }
+  #arb-flash-wrap { margin: 22px 0 4px; min-height: 96px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  #arb-flash {
+    font-family: 'Playfair Display', serif; font-weight: 900;
+    font-size: 53px; line-height: 1; color: var(--oxblood); white-space: nowrap;
+    opacity: 0; position: relative;
+  }
+  #arb-flash.stamp-in { animation: bigstamp .5s cubic-bezier(.2,1.5,.4,1) forwards; }
+  @keyframes bigstamp {
+    0% { opacity: 0; transform: scale(2.6) rotate(-3deg); }
+    60% { opacity: 1; transform: scale(.94) rotate(0); }
+    100% { opacity: 1; transform: scale(1) rotate(0); }
+  }
+  #arb-flash-sub {
+    font-size: 9px; letter-spacing: .26em; text-transform: uppercase; color: var(--gold);
+    font-weight: 700; margin-top: 9px; opacity: 0;
+  }
+  #arb-flash-sub.showit { animation: fadein .4s ease forwards; }
+  #arb-formula {
+    font-size: 9px; color: var(--ink-soft); margin-top: 4px; opacity: 0; letter-spacing: .04em;
+  }
+  #arb-formula.showit { animation: fadein .4s ease forwards; }
+  #btn-arb-ok {
+    margin-top: auto; background: var(--ink); color: var(--paper); border: none;
+    box-shadow: 3px 3px 0 var(--gold);
+    font-size: 11px; letter-spacing: .18em; font-weight: 700; text-transform: uppercase;
+    padding: 12px 44px 11px; opacity: 0;
+  }
+  #btn-arb-ok.showit { animation: fadein .4s ease forwards; }
+  #btn-arb-ok:active { box-shadow: 1px 1px 0 var(--gold); }
+
+  /* gold-foil burst */
+  .foil {
+    position: absolute; z-index: 70; pointer-events: none;
+    width: 8px; height: 8px;
+    background: linear-gradient(135deg, var(--gold-hi), var(--gold));
+    animation: foilfly .9s cubic-bezier(.2,.7,.4,1) forwards;
+  }
+  .foil.r2 { width: 5px; height: 11px; }
+  @keyframes foilfly {
+    0% { opacity: 1; transform: translate(0,0) rotate(0) scale(1); }
+    100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(.3); }
+  }
+
+  /* floating deltas */
+  .float-delta {
+    position: absolute; z-index: 80; pointer-events: none;
+    font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 14px;
+    color: var(--good);
+    animation: floatup 1.4s ease-out forwards;
+  }
+  .float-delta.neg { color: var(--oxblood); }
+  @keyframes floatup {
+    0% { opacity: 0; transform: translateY(8px); }
+    18% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-30px); }
+  }
+</style>
+</head>
+<body>
+<div id="phone">
+  <div id="page">
+
+    <!-- ====== MASTHEAD ====== -->
+    <header id="masthead">
+      <div class="double-rule top-rule"></div>
+      <h1>MULTIPLES<span class="x-glyph">&times;</span></h1>
+      <div class="deck">
+        <span><b>FISCAL ROUND 3 OF 8</b></span><span class="dot">&#10022;</span>
+        <span><b>TIER II</b></span><span class="dot">&#10022;</span>
+        <span>TARGET <b>$10,000,000</b></span>
+      </div>
+      <div class="bot-rule"></div>
+    </header>
+
+    <!-- ====== I. KEY FIGURES ====== -->
+    <div class="sect-lbl"><span><span class="roman">I.</span>&nbsp;&nbsp;KEY FIGURES</span></div>
+    <div id="key-figures">
+      <div id="kf-cash" class="kf-box">
+        <div class="kf-lbl">Cash on hand</div>
+        <div class="kf-val" id="v-cash">$382,000</div>
+      </div>
+      <div id="kf-nw" class="kf-box">
+        <div class="kf-lbl">Net worth&nbsp;<sup>1</sup></div>
+        <div class="kf-val" id="v-nw">$1.80M</div>
+        <div class="fn"><b>&sup1;</b> unrealized, mark-to-market</div>
+      </div>
+    </div>
+    <div id="fig-table">
+      <div class="cell"><div class="f-lbl">EBITDA</div><div class="f-val" id="v-eb">$310k</div></div>
+      <div class="cell"><div class="f-lbl">Multiple</div><div class="f-val" id="v-mu">11.0&times;</div></div>
+      <div class="cell"><div class="f-lbl">Net debt</div><div class="f-val" id="v-db">$1.20M</div></div>
+      <div class="cell"><div class="f-lbl">Ownership</div><div class="f-val" id="v-ow">64%</div></div>
+    </div>
+
+    <!-- ====== II. EXHIBITS (meters) ====== -->
+    <div class="sect-lbl"><span><span class="roman">II.</span>&nbsp;&nbsp;EXHIBITS &mdash; FORWARD INDICATORS</span></div>
+    <div id="exhibits">
+      <div class="exhibit">
+        <div class="ex-head"><span>Exhibit A &middot; Runway</span><span class="verdict" style="color:var(--good)">ADEQUATE</span></div>
+        <div id="runway-chart">
+          <div class="rbar-track"><i class="rbar-fill"></i><i class="rbar-needline"></i></div>
+        </div>
+        <div class="ex-cap">Debt service next period <b>$48k</b> vs projected cash <b>$96k</b></div>
+      </div>
+      <div class="exhibit">
+        <div class="ex-head"><span>Exhibit B &middot; Market</span><span class="verdict">WARMING</span></div>
+        <div id="market-gauge">
+          <div class="mg-track"><i></i><i></i><i></i></div>
+          <div class="mg-needle"></div>
+        </div>
+        <div class="mg-scale"><span>COLD</span><span class="cur">NEUTRAL</span><span>HOT</span></div>
+      </div>
+    </div>
+
+    <!-- ====== market clipping ====== -->
+    <div id="clipping">
+      <span class="kicker">MKT&nbsp;WIRE&nbsp;&mdash;</span>
+      <span class="head">Software Multiples Stretch as Bubble Forms</span>
+    </div>
+
+    <!-- ====== III. PORTFOLIO SCHEDULE ====== -->
+    <div class="sect-lbl"><span><span class="roman">III.</span>&nbsp;&nbsp;SCHEDULE OF PORTFOLIO HOLDINGS</span></div>
+    <div id="schedule">
+      <div class="sched-row" id="platform-row">
+        <span class="co">Nimbus Metrics</span>
+        <span class="sec">SOFTWARE</span>
+        <span class="nums">EBITDA <b id="p-eb">$310k</b> &middot; <b id="p-mu">11.0&times;</b> &middot; <b>64%</b> owned</span>
+      </div>
+    </div>
+
+    <!-- ====== IV. MANDATES (the hand) ====== -->
+    <div class="sect-lbl" id="mandates-head">
+      <span><span class="roman">IV.</span>&nbsp;&nbsp;MANDATES BEFORE THE COMMITTEE</span>
+      <span class="actions-ct">ACTIONS REMAINING: <span class="n" id="v-plays">2</span> OF 3</span>
+    </div>
+    <div id="tombstones">
+
+      <div class="tomb" id="tomb-addon" onclick="openNapkin()">
+        <span class="t-type accent">Add-on</span>
+        <div class="t-name">Micro-SaaS<br>Tuck-in</div>
+        <div class="t-fig">EBITDA <b>$40k</b>/rd<br>at <b>4.5&times;</b> &middot; <b>$180k</b></div>
+        <div class="t-ornament">&#10086;</div>
+        <div class="t-foot">Software</div>
+        <span class="stamp">Executed</span>
+      </div>
+
+      <div class="tomb">
+        <span class="t-type">Raise</span>
+        <div class="t-name">Series A<br>Term Sheet</div>
+        <div class="t-fig">cash <b>+$800k</b><br>dilutes ownership</div>
+        <div class="t-ornament">&#10086;</div>
+        <div class="t-foot">New bosses</div>
+      </div>
+
+      <div class="tomb">
+        <span class="t-type">Loan</span>
+        <div class="t-name">Term Loan</div>
+        <div class="t-fig">cash <b>+$500k</b><br>debt <b>+$500k</b> &middot; <b>~11%</b></div>
+        <div class="t-ornament">&#10086;</div>
+        <div class="t-foot">Lever up</div>
+      </div>
+
+      <div class="tomb">
+        <span class="t-type">Exit</span>
+        <div class="t-name">Acquisition<br>Offer</div>
+        <div class="t-fig">rolls <b>6.0&times;</b><br>paper &rarr; <b>cash</b></div>
+        <div class="t-ornament">&#10086;</div>
+        <div class="t-foot">Cash out</div>
+      </div>
+
+    </div>
+
+    <!-- ====== closing line ====== -->
+    <div id="closing">
+      <span id="reinvest-fn">&sup2; Reinvest at baseline &rsaquo;</span>
+      <span class="spacer"></span>
+      <button class="btn" id="btn-reroll">Reroll &middot; $15k<small>solicit new mandates</small></button>
+      <button class="btn" id="btn-end">End Turn<small>&mdash; close the period &mdash;</small></button>
+    </div>
+
+    <div id="hint">&#9650; Open the Add-on mandate</div>
+  </div>
+
+  <!-- ====== THE NAPKIN (memo overlay) ====== -->
+  <div class="overlay" id="napkin">
+    <div id="napkin-sheet">
+      <div class="memo-tag">Internal Memorandum &middot; Strictly Private</div>
+      <h3>The Napkin</h3>
+      <div class="memo-sub">Re: Micro-SaaS Tuck-in &rarr; Nimbus Metrics</div>
+      <div class="memo-rule"></div>
+      <div class="mrow"><span class="k">Consideration paid</span><span class="v neg">&minus; $180k cash</span></div>
+      <div class="mrow"><span class="k">Platform absorbs</span><span class="v pos">+ $40k EBITDA</span></div>
+      <div class="mrow"><span class="k">Same sector?</span><span class="v pos">YES &middot; SOFTWARE</span></div>
+      <div class="mrow"><span class="k">Synergy bonus</span><span class="v pos">+ $8k EBITDA</span></div>
+      <div class="mrow"><span class="k">Platform multiple</span><span class="v">11.0&times; &rarr; 11.0&times; <span style="font-size:9px;color:var(--ink-soft)">(held)</span></span></div>
+      <div class="memo-rule"></div>
+      <div class="memo-note">Upon execution, the target's earnings fold in at the platform's multiple. Same-sector acquisitions add synergy and hold the multiple.</div>
+      <div class="memo-actions">
+        <button class="btn" id="btn-decline" onclick="closeNapkin()">Decline</button>
+        <button class="btn" id="btn-execute" onclick="executeDeal()">Execute &rsaquo;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== MULTIPLE ARBITRAGE — breaking headline page ====== -->
+  <div id="arb-page">
+    <div id="arb-kicker">Special Bulletin &middot; Valuation Event</div>
+    <div id="arb-title" class="serif">MULTIPLE<br>ARBITRAGE</div>
+    <div id="arb-sub">$48k of earnings bought at 4.5&times;, revalued at <b>11.0&times;</b></div>
+    <div id="arb-math">
+      <div class="mrow"><span class="k">EBITDA</span><span class="v" id="arb-eb">$310k</span></div>
+      <div class="mrow"><span class="k">Multiple</span><span class="v held">11.0&times; (held)</span></div>
+      <div class="mrow"><span class="k">Enterprise value</span><span class="v" id="arb-ev">$3.41M</span></div>
+    </div>
+    <div id="arb-flash-wrap">
+      <div id="arb-flash">+$260,000</div>
+      <div id="arb-flash-sub">Pure arbitrage &middot; That's allowed?!</div>
+      <div id="arb-formula">= $40k &times; (11.0 &minus; 4.5)</div>
+    </div>
+    <button class="btn" id="btn-arb-ok" onclick="dismissArb()">Duly Noted</button>
+  </div>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  let executed = false;
+
+  /* ---------- napkin ---------- */
+  function openNapkin() {
+    if (executed) return;
+    $('tomb-addon').classList.add('sel');
+    $('platform-row').classList.add('target-hot');
+    $('hint').style.display = 'none';
+    $('napkin').classList.add('show');
+  }
+  function closeNapkin() {
+    $('napkin').classList.remove('show');
+    $('tomb-addon').classList.remove('sel');
+    $('platform-row').classList.remove('target-hot');
+  }
+
+  /* ---------- arbitrage page ---------- */
+  function executeDeal() {
+    $('napkin').classList.remove('show');
+    $('arb-page').classList.add('show');
+    // reset transient pieces in case of replays
+    $('arb-eb').textContent = '$310k';
+    $('arb-ev').textContent = '$3.41M';
+    // sequence: EBITDA counts, EV counts, flash stamps in
+    setTimeout(() => countUp('arb-eb', 310, 358, 750, v => '$' + Math.round(v) + 'k'), 900);
+    setTimeout(() => countUp('arb-ev', 3.41, 3.94, 750, v => '$' + v.toFixed(2) + 'M'), 1750);
+    setTimeout(() => {
+      $('arb-flash').classList.add('stamp-in');
+      $('page').classList.add('shake');
+      foilBurst();
+      setTimeout(() => $('page').classList.remove('shake'), 480);
+    }, 2700);
+    setTimeout(() => $('arb-flash-sub').classList.add('showit'), 3150);
+    setTimeout(() => $('arb-formula').classList.add('showit'), 3400);
+    setTimeout(() => $('btn-arb-ok').classList.add('showit'), 3550);
+  }
+
+  function dismissArb() {
+    $('arb-page').classList.remove('show');
+    if (executed) return;
+    executed = true;
+
+    // ledger updates with ticks + floating deltas
+    setFig('v-eb', '$358k');            floatDelta('v-eb', '+$48k');
+    setFig('v-cash', '$202,000');       floatDelta('v-cash', '−$180k', true);
+    setTimeout(() => { setFig('v-nw', '$1.95M'); floatDelta('v-nw', '+$150k'); }, 300);
+
+    // portfolio schedule + budget
+    $('p-eb').textContent = '$358k';
+    setFig('v-plays', '1');
+
+    // stamp the tombstone
+    $('tomb-addon').classList.remove('sel');
+    $('platform-row').classList.remove('target-hot');
+    $('tomb-addon').classList.add('done');
+  }
+
+  /* ---------- helpers ---------- */
+  function setFig(id, txt) {
+    const el = $(id);
+    el.textContent = txt;
+    el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick');
+  }
+
+  function floatDelta(anchorId, text, neg) {
+    const a = $(anchorId).getBoundingClientRect();
+    const p = $('phone').getBoundingClientRect();
+    const f = document.createElement('div');
+    f.className = 'float-delta' + (neg ? ' neg' : '');
+    f.textContent = text;
+    f.style.left = (a.left - p.left) + 'px';
+    f.style.top  = (a.top - p.top - 10) + 'px';
+    $('phone').appendChild(f);
+    setTimeout(() => f.remove(), 1500);
+  }
+
+  function countUp(id, from, to, ms, fmt) {
+    const el = $(id), t0 = performance.now();
+    el.style.color = 'var(--oxblood)';
+    (function step(t) {
+      const k = Math.min(1, (t - t0) / ms);
+      const ease = 1 - Math.pow(1 - k, 3);
+      el.textContent = fmt(from + (to - from) * ease);
+      if (k < 1) requestAnimationFrame(step);
+    })(t0);
+  }
+
+  function foilBurst() {
+    const h = $('arb-flash').getBoundingClientRect();
+    const p = $('phone').getBoundingClientRect();
+    for (let i = 0; i < 26; i++) {
+      const s = document.createElement('div');
+      s.className = 'foil' + (i % 2 ? ' r2' : '');
+      const ang = Math.random() * Math.PI * 2, d = 70 + Math.random() * 120;
+      s.style.setProperty('--dx', Math.cos(ang) * d + 'px');
+      s.style.setProperty('--dy', Math.sin(ang) * d + 'px');
+      s.style.setProperty('--rot', (Math.random() * 540 - 270) + 'deg');
+      s.style.left = (h.left - p.left + h.width / 2) + 'px';
+      s.style.top  = (h.top - p.top + h.height / 2) + 'px';
+      $('phone').appendChild(s);
+      setTimeout(() => s.remove(), 950);
+    }
+  }
+</script>
+</body>
+</html>

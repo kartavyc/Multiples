@@ -1,0 +1,41 @@
+# Golden replay snapshot v4 — MULTIPLES engine (Phase 3 round 4: the
+# DEAL-FLOW layer). (seed 42, the scripted run in
+# test/golden_replay_test.dart: initRun -> operate/merge-from-hand/
+# reinvest -> shop deal + buy -> deadline advance -> operate -> held play
+# -> ACT reroll) -> this exact end state, one path=value per line, sorted.
+# Supersedes replay_seed42_v3.txt (RETIRED at engineSchemaVersion 4 — the
+# stream MOVED: hand/event/shop/reroll draws joined it; docs/03 §6).
+# ANY change to this file is STREAM-BREAKING: never edit it in place.
+# Version a new file (v5), point the test at it, and bump
+# engineSchemaVersion so in-progress runs are abandoned, not mis-replayed.
+actionLog.length=5
+cash=3884500
+death=-1
+hand.0=VEN_IND_WORKSHOP
+hand.1=VEN_RET_KIOSK
+hand.2=VEN_SVC_AGENCY
+hand.3=VEN_SW_GARAGE
+hand.4=ADD_SW_MICRO
+market.liveRateBp=1222
+market.roundsInState=1
+market.stateDurationRounds=3
+market.temp=1
+netWorthAtTierEntry=5600000
+netWorthLastRound=7864910
+phase=1
+playsRemaining=2
+rerollsUsed=1
+rng.cursor=28
+rngCursor=28
+round=2
+schemaVersion=4
+shopOffers.0=FIN_TERM_LOAN
+shopOffers.1=PLY_MARKET_READ
+tier=1
+venture.v1.ebitda=1070000
+venture.v1.multiple=5963
+venture.v1.netDebt=0
+venture.v1.own=6000
+venture.v1.passive=0
+venture.v1.roundsNeglected=0
+won=0

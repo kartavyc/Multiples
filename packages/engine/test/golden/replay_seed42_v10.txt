@@ -1,0 +1,98 @@
+# Golden replay snapshot v10 — MULTIPLES engine (Phase 6 / R20b DRAW-POOL
+# KEYSTONE). (seed 42, the scripted run in test/golden_replay_test.dart,
+# now started with the FULL unlocked card set + all six sectors so the pool
+# is the whole content: initRun (founding operator; full unlock pool) ->
+# operate (organic compounding; the EVENT pool now includes the gate-1
+# EVT_VIRAL_QUARTER — the keystone's newly-drawable card) -> hire partner +
+# merge -> shop deal + SHOP reroll + buy -> advance -> boundary operate
+# (organic + partner accrual) -> held play -> reinvest)
+# -> this exact end state, one path=value per line, sorted.
+# Supersedes replay_seed42_v9.txt (RETIRED at engineSchemaVersion 10). The
+# state gained the FROZEN draw-pool unlock snapshot
+# (unlockedCardIds.*/unlockedSectors.*, serialized by flatten()), and the
+# DRAW POOL WIDENED from content.verticalSlice to `content.cards` ∩ the
+# per-run unlocked predicate — so the event pool grew and every
+# no-replacement draw index moved (a MOVED STREAM, docs/03 §6). Also: the
+# PLY_SPIN_OFF/PLY_EARN_OUT resolvers + the ScheduledCost roundsLeft/
+# pctEbitdaBp widening landed (pinned by spin_off_earn_out_test).
+# ANY change to this file is STREAM-BREAKING: never edit it in place.
+# Version a new file (v11), point the test at it, and bump
+# engineSchemaVersion so in-progress runs are abandoned, not mis-replayed.
+actionLog.length=6
+backgroundId=BOOTSTRAPPER
+cash=858100
+death=-1
+exitOffer.multiple=5440
+exitOffer.ventureId=v1
+hand.0=ADD_SW_PLUGIN
+hand.1=PRT_SALES_LEAD
+hand.2=ADD_SW_MICRO
+market.liveRateBp=963
+market.marketReadExpiresRound=103
+market.marketReadHint=2
+market.roundsInState=1
+market.stateDurationRounds=3
+market.temp=2
+netWorthAtTierEntry=5600000
+netWorthLastRound=9651678
+phase=1
+playsRemaining=1
+rerollsUsed=0
+rng.cursor=28
+rngCursor=28
+round=2
+schemaVersion=10
+shopOffers.0=FIN_TERM_LOAN
+shopOffers.1=PLY_DOWN_ROUND
+tier=1
+unlockedCardIds.0=VEN_SW_GARAGE
+unlockedCardIds.1=VEN_SVC_AGENCY
+unlockedCardIds.10=PRT_SALES_LEAD
+unlockedCardIds.11=PRT_COO_FIXED
+unlockedCardIds.12=PRT_GROWTH_HACKER
+unlockedCardIds.13=FIN_SEED_RAISE
+unlockedCardIds.14=FIN_GROWTH_RAISE
+unlockedCardIds.15=FIN_TERM_LOAN
+unlockedCardIds.16=FIN_LBO_LOAN
+unlockedCardIds.17=FIN_REFI
+unlockedCardIds.18=EVT_SECTOR_BUBBLE
+unlockedCardIds.19=EVT_CREDIT_CRUNCH
+unlockedCardIds.2=VEN_RET_KIOSK
+unlockedCardIds.20=EVT_KEY_CLIENT_LOSS
+unlockedCardIds.21=EVT_VIRAL_QUARTER
+unlockedCardIds.22=EVT_SUPPLY_SHOCK
+unlockedCardIds.23=PLY_BRIDGE_LOAN
+unlockedCardIds.24=PLY_SECONDARY_SALE
+unlockedCardIds.25=PLY_DOWN_ROUND
+unlockedCardIds.26=PLY_TENDER
+unlockedCardIds.27=PLY_DIVIDEND_RECAP
+unlockedCardIds.28=PLY_HOT_WINDOW
+unlockedCardIds.29=PLY_ASSET_STRIP
+unlockedCardIds.3=VEN_IND_WORKSHOP
+unlockedCardIds.30=PLY_SPIN_OFF
+unlockedCardIds.31=PLY_EARN_OUT
+unlockedCardIds.32=PLY_MARKET_READ
+unlockedCardIds.4=VEN_SW_PLATFORM
+unlockedCardIds.5=ADD_SW_PLUGIN
+unlockedCardIds.6=ADD_SW_MICRO
+unlockedCardIds.7=ADD_SVC_TEAM
+unlockedCardIds.8=ADD_RET_STORES
+unlockedCardIds.9=ADD_IND_SUPPLIER
+unlockedSectors.0=0
+unlockedSectors.1=1
+unlockedSectors.2=2
+unlockedSectors.3=3
+unlockedSectors.4=4
+unlockedSectors.5=5
+venture.v1.displayName=QUANTA
+venture.v1.ebitda=1551560
+venture.v1.multiple=5943
+venture.v1.netDebt=0
+venture.v1.own=10000
+venture.v1.partners.0.defId=PRT_FOUNDING_OPERATOR
+venture.v1.partners.0.perRoundEbitda=0
+venture.v1.partners.1.defId=PRT_SALES_LEAD
+venture.v1.partners.1.perRoundEbitda=150000
+venture.v1.passive=0
+venture.v1.roundsNeglected=0
+won=0
