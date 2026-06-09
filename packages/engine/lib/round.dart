@@ -96,15 +96,17 @@ import 'model.dart';
 import 'money.dart' show satMul;
 import 'operate.dart'
     show cashYieldCents, playsGrantedForRound, rateMulColdNum, rateMulDen;
+import 'platform_limits.dart' show kIntWidthMaxCents;
 import 'resolver.dart';
 import 'rng.dart';
 
 // --- Tier bars (economy-model.json tierBars; doc 01 §5) ---
 
 /// T5 endless "bar": an unreachable sentinel (doc 02 §2 "Infinity sentinel
-/// in the bar map's intent") — the largest 64-bit int, so `nw >= bar` never
-/// fires and endless has no win path.
-const int endlessBarSentinelCents = 0x7FFFFFFFFFFFFFFF;
+/// in the bar map's intent") — the largest platform int, so `nw >= bar` never
+/// fires and endless has no win path. Native: 2^63-1; web: 2^53-1 (still far
+/// above any reachable net worth, so the never-fires property holds).
+const int endlessBarSentinelCents = kIntWidthMaxCents;
 
 /// The net-worth bar in cents to clear [tier] (the 10x ladder).
 /// Source: economy-model.json tierBars[].bar = [1e8, 1e9, 1e10, 1e11]
@@ -447,7 +449,7 @@ const int growthRateMaxMilli = 3000;
 /// `x * rateMilli` cannot exceed the 64-bit range. The cap (~3e15 cents,
 /// $30T) is orders of magnitude above every bar, so clamped comparisons
 /// against bars/net-worths are exact within the model's domain.
-const int _compoundCapCents = 0x7FFFFFFFFFFFFFFF ~/ growthRateMaxMilli;
+const int _compoundCapCents = kIntWidthMaxCents ~/ growthRateMaxMilli;
 
 /// Applies [rateMilli] per round for [rounds] rounds to [baseCents] with
 /// per-step truncation — `x = trunc(x * r / 1000)` repeated — the engine's

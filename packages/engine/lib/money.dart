@@ -6,8 +6,11 @@
 /// - `ownershipBp` = ownership in basis points (x10000): 80% is `8000`.
 /// - Integer division truncates toward zero (Dart `~/`).
 ///
-/// Pure and dependency-free (only `dart:core`).
+/// Pure and dependency-free (only `dart:core` + the platform-limits shim,
+/// itself dependency-free).
 library;
+
+import 'platform_limits.dart' show kSatMulMaxCents;
 
 /// Integer division of [a] by [b] truncating toward zero.
 ///
@@ -35,7 +38,10 @@ int truncDiv(int a, int b) => a ~/ b;
 /// ±[kMaxCents] instead of wrapping. The cap sits so far above every
 /// reachable in-range value that NO in-range golden moves (verified by the
 /// replay golden: the seed-42 run's products are ~1e12, nowhere near 2^60).
-const int kMaxCents = 1 << 60;
+/// On NATIVE this is 2^60 (the value above); on WEB the platform shim lowers
+/// it to 2^52 so a clamped product stays inside JS's 2^53 exact-int range.
+/// See platform_limits_web.dart for why web play is unaffected below ~$4.5B.
+const int kMaxCents = kSatMulMaxCents;
 
 /// Saturating signed multiply for the fixed-point money getters: returns
 /// `a * b` clamped to `[-kMaxCents, kMaxCents]`, never wrapping a signed
