@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <base href="$FLUTTER_BASE_HREF">
+  <!-- Relative base so the build works from any subpath (itch.io serves the
+       game from html-classic.itch.zone/html/<id>/, NOT the domain root; an
+       absolute "/" base 404s every asset there). -->
+  <base href="./">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
