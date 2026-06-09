@@ -156,6 +156,20 @@ void main() {
       expect(b.bgm.volume, closeTo(full, 0.001)); // restored
     });
 
+    test('a duck overlapping a mood change still restores to full (no stuck '
+        'silence)', () async {
+      final b = FakeBackend();
+      final c = build(b, duckMs: 30);
+      await c.setMood(AudioMood.act);
+      final full = b.bgm.volume;
+      await c.play(Sfx.arbitrage); // duck
+      await c.setMood(AudioMood.tension); // crossfade DURING the duck window
+      await Future<void>.delayed(const Duration(milliseconds: 60));
+      expect(b.bgm.volume, closeTo(full, 0.001),
+          reason: 'a duck must never leave the BGM dipped/silent after a '
+              'crossfade races it');
+    });
+
     test('a NON-ducking SFX leaves the BGM at full', () async {
       final b = FakeBackend();
       final c = build(b);

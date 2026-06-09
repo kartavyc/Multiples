@@ -31,6 +31,7 @@ import 'controller.dart';
 import 'save_store.dart';
 import 'screens/desk_screen.dart';
 import 'screens/error_screen.dart';
+import 'screens/glossary_screen.dart';
 import 'screens/run_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/title_screen.dart';
@@ -129,7 +130,7 @@ class MultiplesApp extends StatefulWidget {
 }
 
 /// Which top-level screen the shell is showing.
-enum _Screen { title, desk, run, settings }
+enum _Screen { title, desk, run, settings, glossary }
 
 class _MultiplesAppState extends State<MultiplesApp>
     with WidgetsBindingObserver {
@@ -225,7 +226,7 @@ class _MultiplesAppState extends State<MultiplesApp>
 
   /// NEW RUN (title) / START RUN (desk) / RETRY: opens a fresh run posed by
   /// [backgroundId] (the Desk's pick; the title's default Bootstrapper).
-  void _startRun(String backgroundId) {
+  void _startRun(String backgroundId, {bool forceTutorial = false}) {
     _controller?.dispose();
     _controller = GameController(
       cardsJson: widget.cardsJson,
@@ -237,9 +238,10 @@ class _MultiplesAppState extends State<MultiplesApp>
     );
     setState(() {
       // R20: the FIRST NEW RUN ever runs the tutorial (gated on the persisted
-      // seen flag). CONTINUE/resume never does. Captured here so a mid-run
-      // settings toggle doesn't retroactively show/hide it.
-      _tutorialPending = !_settings.tutorialSeen;
+      // seen flag); a GUIDED RUN ([forceTutorial]) always runs it. CONTINUE/
+      // resume never does. Captured here so a mid-run settings toggle doesn't
+      // retroactively show/hide it.
+      _tutorialPending = forceTutorial || !_settings.tutorialSeen;
       _resume = null; // a new run supersedes any old resumable save
       _screen = _Screen.run;
     });
@@ -331,7 +333,9 @@ class _MultiplesAppState extends State<MultiplesApp>
     // on every build. (Deferred a frame so it never fires mid-build.)
     final audio = widget.audio;
     if (audio != null &&
-        (_screen == _Screen.title || _screen == _Screen.desk)) {
+        (_screen == _Screen.title ||
+            _screen == _Screen.desk ||
+            _screen == _Screen.glossary)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         unawaited(audio.setMood(AudioMood.title));
       });
@@ -344,6 +348,9 @@ class _MultiplesAppState extends State<MultiplesApp>
           resumeLabel: _resume == null ? null : _resumeLabel(_resume!.load!),
           onContinue: _resume == null ? null : _continueRun,
           onNewRun: () => _startRun(kBootstrapperBackgroundId),
+          onGuidedRun: () =>
+              _startRun(kBootstrapperBackgroundId, forceTutorial: true),
+          onGlossary: () => setState(() => _screen = _Screen.glossary),
           onDesk: _toDesk,
           onSettings:
               widget.audio == null ? null : () => _openSettings(_Screen.title),
@@ -373,6 +380,11 @@ class _MultiplesAppState extends State<MultiplesApp>
           settings: _settings,
           onBack: _closeSettings,
           onWipeSave: widget.store == null ? null : _wipeSave,
+        );
+      case _Screen.glossary:
+        return GlossaryScreen(
+          key: const ValueKey('screen-glossary'),
+          onBack: () => setState(() => _screen = _Screen.title),
         );
     }
   }

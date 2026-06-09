@@ -42,8 +42,15 @@ class _AudioplayersHandle implements AudioPlayerHandle {
       });
 
   @override
-  Future<void> setLoop(bool loop) => _guard(
-      () => _player.setReleaseMode(loop ? ReleaseMode.loop : ReleaseMode.stop));
+  Future<void> setLoop(bool loop) => _guard(() async {
+        await _player.setReleaseMode(loop ? ReleaseMode.loop : ReleaseMode.stop);
+        // A looping BGM channel MUST use mediaPlayer mode: lowLatency does not
+        // loop reliably (notably on web), so once a track ended the music went
+        // silent — the "randomly goes quiet" bug. One-shot SFX keep lowLatency
+        // for snappy, overlap-friendly playback.
+        await _player.setPlayerMode(
+            loop ? PlayerMode.mediaPlayer : PlayerMode.lowLatency);
+      });
 
   @override
   Future<void> stop() => _guard(_player.stop);

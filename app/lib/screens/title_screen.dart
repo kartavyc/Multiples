@@ -21,6 +21,8 @@ class TitleScreen extends StatelessWidget {
     this.resumeLabel,
     this.onContinue,
     this.onSettings,
+    this.onGuidedRun,
+    this.onGlossary,
   });
 
   /// The run seed tag to print (№ 4F2A).
@@ -41,6 +43,13 @@ class TitleScreen extends StatelessWidget {
 
   /// SETTINGS handler (R20 gear key); null hides the key.
   final VoidCallback? onSettings;
+
+  /// GUIDED RUN handler — starts a run with the first-run tutorial forced on
+  /// (intro cards + coachmarks), regardless of the seen flag; null hides it.
+  final VoidCallback? onGuidedRun;
+
+  /// TIPS · GLOSSARY handler — opens the glossary screen; null hides the key.
+  final VoidCallback? onGlossary;
 
   @override
   Widget build(BuildContext context) {
@@ -155,6 +164,15 @@ class TitleScreen extends StatelessWidget {
                                         : ChunkyKeyVariant.normal,
                                     onTap: onNewRun,
                                   ),
+                                  if (onGuidedRun != null) ...[
+                                    const SizedBox(height: 9),
+                                    ChunkyKey(
+                                      key: const Key('guidedRun'),
+                                      icon: '◉',
+                                      label: 'GUIDED RUN',
+                                      onTap: onGuidedRun!,
+                                    ),
+                                  ],
                                   const SizedBox(height: 9),
                                   ChunkyKey(
                                     key: const Key('theDesk'),
@@ -169,6 +187,15 @@ class TitleScreen extends StatelessWidget {
                                       icon: '⚙',
                                       label: 'SETTINGS',
                                       onTap: onSettings,
+                                    ),
+                                  ],
+                                  if (onGlossary != null) ...[
+                                    const SizedBox(height: 9),
+                                    ChunkyKey(
+                                      key: const Key('glossary'),
+                                      icon: '?',
+                                      label: 'TIPS · GLOSSARY',
+                                      onTap: onGlossary!,
                                     ),
                                   ],
                                 ],

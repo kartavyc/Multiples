@@ -161,6 +161,24 @@ class _Callout extends StatelessWidget {
                           key: const Key('tutorialLine'),
                           style: bodyStyle(size: 13, color: kFg)
                               .copyWith(height: 1.35)),
+                      if (step.fact != null) ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('▸ ',
+                                style: bodyStyle(size: 11, color: kGain)),
+                            Expanded(
+                              child: Text(step.fact!,
+                                  key: const Key('tutorialFact'),
+                                  style: bodyStyle(size: 11, color: kGain)
+                                      .copyWith(
+                                          height: 1.3,
+                                          fontStyle: FontStyle.italic)),
+                            ),
+                          ],
+                        ),
+                      ],
                       const SizedBox(height: 11),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,

@@ -411,13 +411,16 @@ class AudioController {
 
   void _duck() {
     _ducked = true;
-    final token = ++_rampToken;
-    // Dip now (respecting mute/pause), hold, then restore.
+    // Dip now (respecting mute/pause), hold, then ALWAYS restore. Ducking is
+    // deliberately INDEPENDENT of the crossfade [_rampToken]: a stinger must
+    // not cancel an in-flight mood crossfade, and the restore must fire even
+    // if a crossfade or a second duck happened in between. Gating the restore
+    // on the token (the old behaviour) could strand the BGM permanently dipped
+    // or silent — the "randomly goes quiet" bug.
     unawaited(_bgm.setVolume(_targetBgmVolume()));
     _duckTimer?.cancel();
     _duckTimer = Timer(Duration(milliseconds: duckMs), () {
       _ducked = false;
-      if (token != _rampToken) return; // a newer ramp owns the channel
       unawaited(_bgm.setVolume(_targetBgmVolume()));
     });
   }

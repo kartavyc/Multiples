@@ -37,6 +37,7 @@ import 'autopsy_screen.dart';
 import 'deadline_panel.dart';
 import 'digest_overlay.dart';
 import 'exit_flash.dart';
+import 'intro_cards.dart';
 import 'napkin_overlay.dart';
 import 'shop_panel.dart';
 import 'tutorial_overlay.dart';
@@ -120,6 +121,10 @@ class _RunScreenState extends State<RunScreen> {
   /// shell flagged this run; inert otherwise (every getter empty).
   late final TutorialController _tutorial =
       TutorialController(active: widget.tutorialActive);
+
+  /// First-run INTRO CARDS gate (intro_cards.dart): a short swipe-through
+  /// shown once at the very start of a tutorial run, before the coachmarks.
+  bool _introDone = false;
 
   /// Spotlight anchors: the run screen resolves these GlobalKeys to screen
   /// rects for the coachmark cut-out (tutorial_overlay.dart).
@@ -214,10 +219,19 @@ class _RunScreenState extends State<RunScreen> {
     if (s.phase == PhaseId.act) {
       fire.add(TutorialTrigger.actReady);
       fire.add(TutorialTrigger.actReadyTwo);
-      // An ADD-ON in the current hand unblocks step 3.
+      fire.add(TutorialTrigger.paceSeen);
+      // An ADD-ON in the current hand unblocks the add-on coachmark.
       final hasAddon = s.hand.any(
           (id) => _c.content.byId(id).type == CardType.addon);
       if (hasAddon) fire.add(TutorialTrigger.addonInHand);
+      // Leverage / dilution coachmarks land the moment the player's holdings
+      // actually carry debt or sub-100% ownership (optional — never blocks).
+      if (s.ventures.any((v) => v.netDebtCents > 0)) {
+        fire.add(TutorialTrigger.debtTaken);
+      }
+      if (s.ventures.any((v) => v.ownershipBp < 10000)) {
+        fire.add(TutorialTrigger.diluted);
+      }
     }
     if (fire.isEmpty) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -655,6 +669,16 @@ class _RunScreenState extends State<RunScreen> {
                                     onSkip: _tutorialSkip,
                                   );
                                 }),
+                              // FIRST-RUN INTRO CARDS (intro_cards.dart): the
+                              // swipe-through that sets up the equation + loop
+                              // before play. Covers the whole stage until
+                              // dismissed; coachmarks teach on the live beats
+                              // after.
+                              if (widget.tutorialActive && !_introDone)
+                                IntroCards(
+                                  onDone: () =>
+                                      setState(() => _introDone = true),
+                                ),
                               const CrtOverlay(),
                             ],
                           ),
